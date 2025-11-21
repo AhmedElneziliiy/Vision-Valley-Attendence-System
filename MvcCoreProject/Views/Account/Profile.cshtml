@@ -1,0 +1,538 @@
+@model CoreProject.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<!-- Modern Profile Header -->
+<div class="profile-header">
+    <div class="profile-header-content">
+        <div class="d-flex align-items-center gap-4">
+            <div class="profile-header-icon">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div>
+                <h1 class="text-white mb-2">
+                    <i class="bi bi-person-badge me-2"></i>My Profile
+                </h1>
+                <p class="text-white-50 mb-0">
+                    <i class="bi bi-gear-fill me-2"></i>Manage your personal information and security settings
+                </p>
+            </div>
+        </div>
+        <div class="profile-status-badge">
+            <span class="badge status-badge @Model.StatusClass">
+                <i class="bi bi-circle-fill me-2"></i>@Model.StatusDisplay
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="profile-container">
+    <div class="row g-4">
+        <!-- Left Column - Profile Card & Quick Stats -->
+        <div class="col-lg-4">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <div class="profile-avatar-wrapper">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                        {
+                            <img src="@Model.ProfileImageUrl" alt="Profile Picture" class="profile-avatar" />
+                        }
+                        else
+                        {
+                            <div class="profile-avatar profile-avatar-default">
+                                <span>@Model.DisplayName.Substring(0, 1).ToUpper()</span>
+                            </div>
+                        }
+                        <button type="button" class="avatar-upload-btn" data-bs-toggle="modal" data-bs-target="#uploadImageModal" title="Update Profile Picture">
+                            <i class="bi bi-camera-fill"></i>
+                        </button>
+                    </div>
+
+                    <h3 class="profile-name">@Model.DisplayName</h3>
+                    <p class="profile-email">
+                        <i class="bi bi-envelope-fill me-2"></i>@Model.Email
+                    </p>
+                    <span class="profile-role-badge">
+                        <i class="bi bi-shield-check me-2"></i>@Model.RoleName
+                    </span>
+                </div>
+
+                <div class="profile-card-body">
+                    <div class="profile-actions">
+                        <button type="button" class="btn-profile-action btn-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>Edit Profile</span>
+                        </button>
+                        <button type="button" class="btn-profile-action btn-password" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Change Password</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="stats-card">
+                <div class="stats-card-header">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <h5>Quick Stats</h5>
+                </div>
+                <div class="stats-card-body">
+                    <div class="stat-item">
+                        <div class="stat-icon vacation">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">@(Model.VacationBalance ?? 0)</div>
+                            <div class="stat-label">Vacation Days</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon tenure">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">@((DateTime.UtcNow - Model.CreatedAt).Days)</div>
+                            <div class="stat-label">Days with Us</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon joined">
+                            <i class="bi bi-calendar2-event-fill"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">@Model.CreatedAt.ToString("MMM yyyy")</div>
+                            <div class="stat-label">Member Since</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Profile Details -->
+        <div class="col-lg-8">
+            <!-- Personal Information Card -->
+            <div class="info-section-card">
+                <div class="info-section-header">
+                    <i class="bi bi-person-vcard-fill"></i>
+                    <h5>Personal Information</h5>
+                </div>
+                <div class="info-section-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <div class="info-label">
+                                    <i class="bi bi-person-fill"></i>
+                                    <span>Display Name</span>
+                                </div>
+                                <div class="info-value">@Model.DisplayName</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <div class="info-label">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    <span>Email Address</span>
+                                </div>
+                                <div class="info-value">@Model.Email</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <div class="info-label">
+                                    <i class="bi bi-phone-fill"></i>
+                                    <span>Mobile Number</span>
+                                </div>
+                                <div class="info-value">@(Model.Mobile ?? "Not provided")</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <div class="info-label">
+                                    <i class="bi bi-gender-ambiguous"></i>
+                                    <span>Gender</span>
+                                </div>
+                                <div class="info-value">@Model.GenderDisplay</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="info-field">
+                                <div class="info-label">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>Address</span>
+                                </div>
+                                <div class="info-value">@(Model.Address ?? "Not provided")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Information Card -->
+            <div class="info-section-card">
+                <div class="info-section-header">
+                    <i class="bi bi-briefcase-fill"></i>
+                    <h5>Work Information</h5>
+                </div>
+                <div class="info-section-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="work-badge-field">
+                                <div class="work-badge-icon branch">
+                                    <i class="bi bi-building-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="work-badge-label">Branch</div>
+                                    <div class="work-badge-value">@Model.BranchName</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="work-badge-field">
+                                <div class="work-badge-icon department">
+                                    <i class="bi bi-diagram-3-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="work-badge-label">Department</div>
+                                    <div class="work-badge-value">@Model.DepartmentName</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="work-badge-field">
+                                <div class="work-badge-icon role">
+                                    <i class="bi bi-shield-fill-check"></i>
+                                </div>
+                                <div>
+                                    <div class="work-badge-label">Role</div>
+                                    <div class="work-badge-value">@Model.RoleName</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information Card -->
+            <div class="info-section-card">
+                <div class="info-section-header">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <h5>Account Information</h5>
+                </div>
+                <div class="info-section-body">
+                    <div class="account-info-grid">
+                        <div class="account-info-item">
+                            <i class="bi bi-hash"></i>
+                            <div>
+                                <div class="account-info-label">User ID</div>
+                                <div class="account-info-value">@Model.Id</div>
+                            </div>
+                        </div>
+                        <div class="account-info-item">
+                            <i class="bi bi-calendar-plus-fill"></i>
+                            <div>
+                                <div class="account-info-label">Account Created</div>
+                                <div class="account-info-value">@Model.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                            </div>
+                        </div>
+                        <div class="account-info-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <div>
+                                <div class="account-info-label">Account Status</div>
+                                <div class="account-info-value">
+                                    <span class="badge status-badge-sm @(Model.IsActive ? "badge-success" : "badge-danger")">
+                                        <i class="bi bi-circle-fill me-1"></i>@Model.StatusDisplay
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="account-info-item">
+                            <i class="bi bi-hourglass-split"></i>
+                            <div>
+                                <div class="account-info-label">Vacation Balance</div>
+                                <div class="account-info-value">@(Model.VacationBalance ?? 0) days</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="editProfileModalLabel">Edit Profile</h5>
+                        <p class="modal-subtitle mb-0">Update your personal information</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateProfile" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body modern-modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="displayName" class="modern-label">
+                                <i class="bi bi-person-fill me-2"></i>Display Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control modern-input" id="displayName" name="DisplayName" value="@Model.DisplayName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mobile" class="modern-label">
+                                <i class="bi bi-phone-fill me-2"></i>Mobile Number
+                            </label>
+                            <input type="tel" class="form-control modern-input" id="mobile" name="Mobile" value="@Model.Mobile" placeholder="+1234567890">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gender" class="modern-label">
+                                <i class="bi bi-gender-ambiguous me-2"></i>Gender
+                            </label>
+                            <select class="form-select modern-input" id="gender" name="Gender">
+                                <option value="">Not Specified</option>
+                                <option value="M" selected="@(Model.Gender == 'M')">Male</option>
+                                <option value="F" selected="@(Model.Gender == 'F')">Female</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="modern-label">
+                                <i class="bi bi-envelope-fill me-2"></i>Email Address
+                            </label>
+                            <input type="email" class="form-control modern-input" value="@Model.Email" disabled>
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>Email cannot be changed
+                            </small>
+                        </div>
+                        <div class="col-12">
+                            <label for="address" class="modern-label">
+                                <i class="bi bi-geo-alt-fill me-2"></i>Address
+                            </label>
+                            <textarea class="form-control modern-input" id="address" name="Address" rows="3" placeholder="Enter your full address">@Model.Address</textarea>
+                        </div>
+                    </div>
+                    <div class="alert alert-info-modern mt-4">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div>
+                            <strong>Note:</strong> Branch, Department, and Role information can only be changed by administrators.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modern-modal-footer">
+                    <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary-modern">
+                        <i class="bi bi-check-circle-fill"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="changePasswordModalLabel">Change Password</h5>
+                        <p class="modal-subtitle mb-0">Update your account password</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="ChangePassword" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body modern-modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="modern-label">
+                            <i class="bi bi-key-fill me-2"></i>Current Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" class="form-control modern-input" id="currentPassword" name="CurrentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="modern-label">
+                            <i class="bi bi-shield-fill-check me-2"></i>New Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" class="form-control modern-input" id="newPassword" name="NewPassword" required minlength="6">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Minimum 6 characters
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="modern-label">
+                            <i class="bi bi-check2-circle me-2"></i>Confirm New Password <span class="text-danger">*</span>
+                        </label>
+                        <input type="password" class="form-control modern-input" id="confirmPassword" name="ConfirmPassword" required>
+                    </div>
+                    <div class="alert alert-warning-modern">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Important:</strong> Make sure to remember your new password. You'll need it to log in next time.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modern-modal-footer">
+                    <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary-modern">
+                        <i class="bi bi-shield-lock-fill"></i> Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Profile Picture Modal -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1" aria-labelledby="uploadImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="uploadImageModalLabel">Update Profile Picture</h5>
+                        <p class="modal-subtitle mb-0">Upload a new photo</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UploadProfilePicture" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="modal-body modern-modal-body">
+                    <div class="text-center mb-4">
+                        @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                        {
+                            <img src="@Model.ProfileImageUrl" alt="Current Profile Picture" class="upload-preview-img" id="currentImage" />
+                        }
+                        else
+                        {
+                            <div class="upload-preview-img upload-preview-default" id="currentImage">
+                                <span>@Model.DisplayName.Substring(0, 1).ToUpper()</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <label for="profileImage" class="modern-label">
+                            <i class="bi bi-image-fill me-2"></i>Choose New Picture
+                        </label>
+                        <input type="file" class="form-control modern-input" id="profileImage" name="profileImage" accept="image/*" required>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Allowed formats: JPG, JPEG, PNG, GIF (Max 5MB)
+                        </small>
+                    </div>
+                    <div class="text-center mb-3">
+                        <img id="imagePreview" src="#" alt="Preview" class="upload-preview-img d-none" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                    {
+                        <div class="alert alert-warning-modern">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Note:</strong> Uploading a new picture will replace your current profile picture.
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer modern-modal-footer">
+                    @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                    {
+                        <button type="button" class="btn btn-danger-modern me-auto" data-bs-toggle="modal" data-bs-target="#deleteImageModal" data-bs-dismiss="modal">
+                            <i class="bi bi-trash-fill"></i> Remove Picture
+                        </button>
+                    }
+                    <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary-modern">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Profile Picture Confirmation Modal -->
+<div class="modal fade" id="deleteImageModal" tabindex="-1" aria-labelledby="deleteImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header bg-danger">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon">
+                        <i class="bi bi-trash-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0" id="deleteImageModalLabel">Remove Profile Picture</h5>
+                        <p class="modal-subtitle mb-0">Confirm deletion</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="DeleteProfilePicture" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body modern-modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="text-center mb-2"><strong>Are you sure you want to remove your profile picture?</strong></p>
+                    <p class="text-muted text-center">Your profile will show the default avatar with your initial.</p>
+                </div>
+                <div class="modal-footer modern-modal-footer">
+                    <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-danger-modern">
+                        <i class="bi bi-trash-fill"></i> Remove Picture
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/profile.js" asp-append-version="true"></script>
+}

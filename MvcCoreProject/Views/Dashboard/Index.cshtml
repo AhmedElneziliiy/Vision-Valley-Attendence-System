@@ -1,0 +1,222 @@
+﻿@model CoreProject.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>@ViewBag.WelcomeMessage</h1>
+            <p><i class="bi bi-calendar-event"></i> @ViewBag.CurrentTime</p>
+        </div>
+        <button class="refresh-btn" id="refreshBtn" onclick="refreshDashboard()">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span>Refresh</span>
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards Grid -->
+<div class="stats-grid">
+    <!-- Total Users -->
+    <div class="stat-card">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-card-value">@Model.TotalUsers</div>
+                <div class="stat-card-label">Total Users</div>
+            </div>
+            <div class="stat-card-icon primary">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+        <div class="stat-card-change">
+            <i class="bi bi-person-check-fill"></i> @Model.ActiveUsers active
+        </div>
+    </div>
+
+    <!-- Today's Check-ins -->
+    <div class="stat-card success">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-card-value">@Model.TodayCheckIns</div>
+                <div class="stat-card-label">Today's Check-ins</div>
+            </div>
+            <div class="stat-card-icon success">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+        </div>
+        <div class="stat-card-change">
+            <i class="bi bi-graph-up"></i> @Model.AttendanceRate% attendance rate
+        </div>
+    </div>
+
+    <!-- Pending Approvals -->
+    <div class="stat-card warning">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-card-value">@Model.PendingApprovals</div>
+                <div class="stat-card-label">Pending Approvals</div>
+            </div>
+            <div class="stat-card-icon warning">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+        <div class="stat-card-change">
+            <i class="bi bi-exclamation-circle"></i> Requires attention
+        </div>
+    </div>
+
+    <!-- Total Branches -->
+    <div class="stat-card info">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-card-value">@Model.TotalBranches</div>
+                <div class="stat-card-label">Active Branches</div>
+            </div>
+            <div class="stat-card-icon info">
+                <i class="bi bi-building"></i>
+            </div>
+        </div>
+        <div class="stat-card-change">
+            <i class="bi bi-geo-alt-fill"></i> Across all locations
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <!-- Monthly Check-ins Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h5 class="chart-card-title">
+                    <i class="bi bi-graph-up"></i> Monthly Check-ins Trend
+                </h5>
+                <span class="badge bg-primary">Last 6 Months</span>
+            </div>
+            @if (Model.MonthlyCheckIns.Any(m => m.CheckIns > 0))
+            {
+                <div class="chart-container">
+                    <canvas id="monthlyCheckInsChart"></canvas>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-graph-up"></i>
+                    <p>No check-in data available yet</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Department Attendance -->
+    <div class="col-lg-4 mb-4">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h5 class="chart-card-title">
+                    <i class="bi bi-diagram-3"></i> Department Attendance
+                </h5>
+                <span class="badge bg-success">Today</span>
+            </div>
+            @if (Model.DepartmentAttendance.Any())
+            {
+                <ul class="department-list">
+                    @foreach (var dept in Model.DepartmentAttendance)
+                    {
+                        <li class="department-item">
+                            <div class="department-header">
+                                <span class="department-name">@dept.Department</span>
+                                <span class="department-stats">
+                                    @dept.Present/@dept.Total
+                                    <span class="text-success fw-bold">(@dept.Percentage%)</span>
+                                </span>
+                            </div>
+                            <div class="department-progress">
+                                <div class="department-progress-bar"
+                                     style="width: @dept.Percentage%"
+                                     data-percentage="@dept.Percentage">
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-diagram-3"></i>
+                    <p>No department data available</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h5 class="chart-card-title">
+                    <i class="bi bi-activity"></i> Recent Activity
+                </h5>
+                <span class="badge bg-info">Live Feed</span>
+            </div>
+            @if (Model.RecentActivities.Any())
+            {
+                <ul class="activity-feed">
+                    @foreach (var activity in Model.RecentActivities)
+                    {
+                        <li class="activity-item">
+                            <div class="activity-icon @activity.Color">
+                                <i class="@activity.Icon"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div>
+                                    <span class="activity-user">@activity.UserName</span>
+                                    <span class="activity-action">@activity.Action</span>
+                                </div>
+                                <div class="activity-time">
+                                    <i class="bi bi-clock"></i> @activity.TimeAgo
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-activity"></i>
+                    <p>No recent activity</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Dashboard Scripts -->
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+
+    <!-- Initialize Charts with Data -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Check-ins Data
+            const monthlyData = @Html.Raw(Json.Serialize(Model.MonthlyCheckIns));
+
+            if (monthlyData && monthlyData.length > 0) {
+                initMonthlyCheckInsChart(monthlyData);
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}

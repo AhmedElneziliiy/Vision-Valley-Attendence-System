@@ -1,0 +1,268 @@
+﻿@model IEnumerable<CoreProject.ViewModels.UserViewModel>
+@{
+    ViewData["Title"] = "Users Management";
+}
+
+<!-- Users Header -->
+<div class="users-header">
+    <div class="users-header-top">
+        <div class="users-title">
+            <div class="title-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <h1>Users Management</h1>
+                <p class="text-muted mb-0">Manage system users and their roles</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Create" class="btn-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add New User</span>
+                </a>
+                <button type="button" class="btn-secondary" onclick="exportUsers()">
+                    <i class="bi bi-download"></i>
+                    <span>Export</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="users-stats">
+        <div class="stat-item">
+            <div class="stat-value">@ViewBag.TotalUsers</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-success">@ViewBag.ActiveUsers</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-danger">@(ViewBag.TotalUsers - ViewBag.ActiveUsers)</div>
+            <div class="stat-label">Inactive</div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filters -->
+<div class="users-filters">
+    <form method="get" asp-action="Index" id="filterForm">
+        <div class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-search"></i> Search
+                </label>
+                <input type="text"
+                       name="search"
+                       class="filter-input"
+                       placeholder="Search by name, email, or mobile..."
+                       value="@ViewBag.SearchTerm" />
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-building"></i> Branch
+                </label>
+                <select name="branchId" class="filter-select">
+                    <option value="">All Branches</option>
+                    @foreach (var branch in ViewBag.Branches as IEnumerable<CoreProject.Models.Branch>)
+                    {
+                        <option value="@branch.ID"
+                                selected="@(ViewBag.SelectedBranchId == branch.ID)">
+                            @branch.Name
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-person-badge"></i> Role
+                </label>
+                <select name="role" class="filter-select">
+                    <option value="">All Roles</option>
+                    @foreach (var role in ViewBag.Roles as IEnumerable<string>)
+                    {
+                        <option value="@role"
+                                selected="@(ViewBag.SelectedRole == role)">
+                            @role
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">
+                    <i class="bi bi-funnel"></i>
+                    Apply Filters
+                </button>
+                <a asp-action="Index" class="btn-clear">
+                    <i class="bi bi-x-circle"></i>
+                    Clear
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Users Table -->
+<div class="users-table-container">
+    @if (Model.Any())
+    {
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Contact</th>
+                    <th>Branch</th>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Vacation Days</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar">
+                                    @user.DisplayName.Substring(0, 1).ToUpper()
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">@user.DisplayName</div>
+                                    <div class="user-email">@user.Email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(user.Mobile))
+                            {
+                                <div>
+                                    <i class="bi bi-phone text-muted"></i>
+                                    <span>@user.Mobile</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-building text-primary"></i>
+                                <span>@user.BranchName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-diagram-3 text-info"></i>
+                                <span>@user.DepartmentName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge @user.RoleBadgeClass">
+                                @user.PrimaryRole
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-@user.StatusClass">
+                                @user.StatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-event text-warning"></i>
+                                <span class="fw-semibold">@(user.VacationBalance ?? 0) days</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view"
+                                        title="View Details"
+                                        onclick="viewUser(@user.Id)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Manager"))
+                                {
+                                    <button class="btn-icon btn-info"
+                                            title="View Attendance Report"
+                                            onclick="viewAttendanceReport(@user.Id)">
+                                        <i class="bi bi-file-earmark-bar-graph"></i>
+                                    </button>
+                                }
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                                {
+                                    <button class="btn-icon btn-edit"
+                                            title="Edit User"
+                                            onclick="editUser(@user.Id)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn-icon btn-warning"
+                                            title="Reset Password"
+                                            onclick="confirmResetPassword(@user.Id, '@user.DisplayName')">
+                                        <i class="bi bi-key"></i>
+                                    </button>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <button class="btn-icon btn-delete"
+                                                title="Delete User"
+                                                onclick="confirmDelete(@user.Id, '@user.DisplayName')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <h3>No Users Found</h3>
+            <p>Try adjusting your filters or create a new user to get started.</p>
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Create" class="btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add First User</span>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/users.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+}

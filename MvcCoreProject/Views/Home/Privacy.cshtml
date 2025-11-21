@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Privacy Policy";
+}
+<h1>@ViewData["Title"]</h1>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="alert alert-success">
+        <strong>Success!</strong> You are logged in.
+        <p><strong>User:</strong> @ViewBag.User</p>
+        <p><strong>Branch ID:</strong> @ViewBag.BranchID</p>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        <strong>Not authenticated!</strong>
+    </div>
+}

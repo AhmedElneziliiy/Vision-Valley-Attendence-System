@@ -1,0 +1,15 @@
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\bin\Release\net8.0\CoreProject.deps.json
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\bin\Release\net8.0\CoreProject.runtimeconfig.json
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\bin\Release\net8.0\CoreProject.dll
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\bin\Release\net8.0\CoreProject.pdb
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.csproj.AssemblyReference.cache
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.GeneratedMSBuildEditorConfig.editorconfig
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.AssemblyInfoInputs.cache
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.AssemblyInfo.cs
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.csproj.CoreCompileInputs.cache
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.dll
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\refint\CoreProject.dll
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.pdb
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.genruntimeconfig.cache
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\ref\CoreProject.dll
+C:\Vision Valley Attendence Back-End\Vision Valley Attendence\CoreProject\obj\Release\net8.0\CoreProject.sourcelink.json

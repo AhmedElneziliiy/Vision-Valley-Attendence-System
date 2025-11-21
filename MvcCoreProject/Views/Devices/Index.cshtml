@@ -1,0 +1,272 @@
+@model IEnumerable<CoreProject.ViewModels.DeviceViewModel>
+@{
+    ViewData["Title"] = "Devices Management";
+}
+
+<!-- Devices Header -->
+<div class="users-header">
+    <div class="users-header-top">
+        <div class="users-title">
+            <div class="title-icon device-icon">
+                <i class="bi bi-hdd-network-fill"></i>
+            </div>
+            <div>
+                <h1>Devices Management</h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-gear-fill me-1"></i>
+                    Manage and monitor attendance tracking devices
+                </p>
+            </div>
+        </div>
+        <div class="users-actions">
+            <a asp-action="Create" class="btn-primary btn-create-device">
+                <i class="bi bi-plus-lg"></i>
+                <span>Add New Device</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="users-stats devices-stats">
+        <div class="stat-item stat-total">
+            <div class="stat-icon">
+                <i class="bi bi-collection-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.Count()</div>
+                <div class="stat-label">Total Devices</div>
+            </div>
+        </div>
+        <div class="stat-item stat-success">
+            <div class="stat-icon">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.Count(d => d.IsSignedIn == true)</div>
+                <div class="stat-label">Sign-In Enabled</div>
+            </div>
+        </div>
+        <div class="stat-item stat-primary">
+            <div class="stat-icon">
+                <i class="bi bi-box-arrow-right"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.Count(d => d.IsSignedOut == true)</div>
+                <div class="stat-label">Sign-Out Enabled</div>
+            </div>
+        </div>
+        <div class="stat-item stat-info">
+            <div class="stat-icon">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+            <div>
+                <div class="stat-value">@Model.Count(d => d.IsPassThrough)</div>
+                <div class="stat-label">Pass Through</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filters -->
+<div class="users-table-container">
+    <div class="table-filters device-filters mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="typeFilter" class="form-label filter-label">
+                    <i class="bi bi-funnel-fill me-2"></i>Device Type
+                </label>
+                <div class="input-with-icon">
+                    <i class="bi bi-hdd-rack"></i>
+                    <select id="typeFilter" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="I">
+                            <i class="bi bi-box-arrow-in-right"></i> In Device (Entry)
+                        </option>
+                        <option value="O">Out Device (Exit)</option>
+                        <option value="B">Both (Entry/Exit)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="branchFilter" class="form-label filter-label">
+                    <i class="bi bi-building-fill me-2"></i>Branch
+                </label>
+                <div class="input-with-icon">
+                    <i class="bi bi-building"></i>
+                    <select id="branchFilter" class="form-select">
+                        <option value="">All Branches</option>
+                        @foreach (var branch in Model.Select(d => new { d.BranchId, d.BranchName }).Distinct())
+                        {
+                            <option value="@branch.BranchId">@branch.BranchName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="signInFilter" class="form-label filter-label">
+                    <i class="bi bi-shield-check me-2"></i>Sign In Status
+                </label>
+                <div class="input-with-icon">
+                    <i class="bi bi-toggle-on"></i>
+                    <select id="signInFilter" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="enabled">Enabled</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="searchDevice" class="form-label filter-label">
+                    <i class="bi bi-search me-2"></i>Search
+                </label>
+                <div class="input-with-icon">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchDevice" class="form-control" placeholder="Search by description...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Devices Table -->
+    @if (Model.Any())
+    {
+        <table class="users-table" id="devicesTable">
+            <thead>
+                <tr>
+                    <th>Device Info</th>
+                    <th>Mobile Device ID</th>
+                    <th>Type</th>
+                    <th>Branch</th>
+                    <th>Status</th>
+                    <th>Sign In</th>
+                    <th>Sign Out</th>
+                    <th>Pass Through</th>
+                    <th>Access Control</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var device in Model)
+                {
+                    <tr data-device-type="@device.DeviceType"
+                        data-branch-id="@device.BranchId"
+                        data-sign-in="@(device.IsSignedIn == true ? "enabled" : "disabled")"
+                        data-sign-out="@(device.IsSignedOut == true ? "enabled" : "disabled")"
+                        data-description="@(device.Description?.ToLower() ?? "")">
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar">
+                                    <i class="bi bi-tablet"></i>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">Device #@device.Id</div>
+                                    <div class="user-email text-muted">@(device.Description ?? "No description")</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-phone text-info"></i>
+                                <span class="font-monospace">@(device.DeviceID ?? "Not Assigned")</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">
+                                @device.DeviceTypeDisplay
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-building text-primary"></i>
+                                <span>@device.BranchName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-@device.IsActiveClass">
+                                @device.IsActiveBadge
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-@device.SignInStatusClass">
+                                @device.SignInStatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-@device.SignOutStatusClass">
+                                @device.SignOutStatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-@device.PassThroughClass">
+                                @device.PassThroughBadge
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-@device.AccessControlClass">
+                                @device.AccessControlBadge
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view"
+                                        title="View Details"
+                                        onclick="viewDevice(@device.Id)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn-icon btn-edit"
+                                        title="Edit Device"
+                                        onclick="editDevice(@device.Id)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn-icon btn-delete"
+                                        title="Delete Device"
+                                        onclick="confirmDelete(@device.Id)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-tablet"></i>
+            <h3>No Devices Found</h3>
+            <p>Get started by adding your first device.</p>
+            <a asp-action="Create" class="btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add First Device</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/devices.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/devices.css" asp-append-version="true" />
+}

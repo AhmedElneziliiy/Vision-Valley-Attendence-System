@@ -1,0 +1,181 @@
+@model CoreProject.ViewModels.AttendanceViewModel
+
+@{
+    ViewData["Title"] = "Edit Attendance Record";
+}
+
+<div class="mb-4">
+    <h2><i class="bi bi-pencil me-2"></i>Edit Attendance Record</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Manual Attendance</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Attendance</h5>
+            </div>
+            <div class="card-body">
+                <!-- Employee Info (Read-only) -->
+                <div class="alert alert-secondary mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="bi bi-person me-1"></i>Employee:</strong>
+                            @Model.UserName
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="bi bi-calendar me-1"></i>Date:</strong>
+                            @Model.Date.ToString("dddd, dd MMMM yyyy")
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.BranchName))
+                    {
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="bi bi-building me-1"></i>@Model.BranchName
+                                @if (!string.IsNullOrEmpty(Model.DepartmentName))
+                                {
+                                    <span>| <i class="bi bi-diagram-3 me-1"></i>@Model.DepartmentName</span>
+                                }
+                            </small>
+                        </div>
+                    }
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-box-arrow-in-right text-success me-1"></i>Check-In Time
+                                </label>
+                                <input type="time" name="checkInTime" class="form-control"
+                                       value="@Model.FirstCheckIn" />
+                                <div class="form-text">Current: @(Model.FirstCheckIn ?? "Not checked in")</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-box-arrow-right text-danger me-1"></i>Check-Out Time
+                                </label>
+                                <input type="time" name="checkOutTime" class="form-control"
+                                       value="@Model.LastCheckOut" />
+                                <div class="form-text">Current: @(Model.LastCheckOut ?? "Not checked out")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Status -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center py-2">
+                                    <small class="text-muted d-block">Current Duration</small>
+                                    <strong>@Model.DurationDisplay</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center py-2">
+                                    <small class="text-muted d-block">Status</small>
+                                    <span class="badge @Model.StatusClass">@Model.Status</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center py-2">
+                                    <small class="text-muted d-block">Time Status</small>
+                                    <span class="@Model.AttendanceStatusClass">@Model.AttendanceStatusDisplay</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Attendance Records -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-list-check me-2"></i>Time Records</h6>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Records.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var record in Model.Records.OrderBy(r => r.Time))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    @if (record.IsCheckIn)
+                                    {
+                                        <i class="bi bi-box-arrow-in-right text-success me-1"></i>
+                                        <span class="text-success">Check-In</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-box-arrow-right text-danger me-1"></i>
+                                        <span class="text-danger">Check-Out</span>
+                                    }
+                                </span>
+                                <span class="badge bg-secondary">@record.Time.ToString(@"hh\:mm")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="p-3 text-center text-muted">
+                        <i class="bi bi-inbox d-block fs-4"></i>
+                        No time records
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Help -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>Help</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small mb-0">
+                    <li>Edit check-in and check-out times as needed</li>
+                    <li>Duration will be recalculated automatically</li>
+                    <li>Clear a time field to remove that entry</li>
+                    <li>All existing time records will be replaced</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

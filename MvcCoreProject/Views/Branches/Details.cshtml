@@ -1,0 +1,492 @@
+@model CoreProject.ViewModels.BranchDetailsViewModel
+@using CoreProject.Helpers
+@{
+    ViewData["Title"] = "Branch Details";
+
+    string GetTimeZoneName(int timeZone)
+    {
+        return timeZone switch
+        {
+            0 => "UTC",
+            1 => "Asia/Dubai (UAE)",
+            2 => "Africa/Cairo (Egypt)",
+            3 => "Europe/London (UK)",
+            4 => "America/New_York (EST)",
+            _ => "Not set"
+        };
+    }
+
+    var timezoneOffset = TimezoneHelper.GetTimezoneOffset(Model.TimeZone);
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>Branch Details</h1>
+                <p class="text-muted mb-0">View branch information and manage departments</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                <i class="bi bi-pencil"></i>
+                <span>Edit Branch</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="create-user-form-container">
+        <!-- Status Badges -->
+        <div class="mb-4">
+            <span class="badge badge-@Model.StatusClass" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-circle-fill"></i> @Model.StatusBadge
+            </span>
+            <span class="badge @Model.MainBranchClass ms-2" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-star-fill"></i> @Model.MainBranchBadge
+            </span>
+        </div>
+
+        <!-- Branch Information -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-building"></i>
+                <h5>Branch Information</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Branch Name</label>
+                        <div class="detail-value">
+                            <i class="bi bi-building text-primary"></i>
+                            <span>@Model.Name</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Organization</label>
+                        <div class="detail-value">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <span>@Model.OrganizationName</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Time Zone</label>
+                        <div class="detail-value">
+                            <i class="bi bi-globe text-primary"></i>
+                            <div class="d-flex flex-column">
+                                <span class="fw-semibold">@GetTimeZoneName(Model.TimeZone)</span>
+                                <small class="text-muted">UTC @(timezoneOffset.StartsWith("-") ? "" : "+")@timezoneOffset</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Weekend Days</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-week text-primary"></i>
+                            <span>@(Model.Weekend ?? "Not set")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label text-muted">National Holidays</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-event text-primary"></i>
+                            <span>@(Model.NationalHolidays ?? "Not set")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-graph-up"></i>
+                <h5>Statistics</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Total Users</label>
+                        <div class="detail-value">
+                            <i class="bi bi-people text-success"></i>
+                            <span class="fw-semibold">@Model.UserCount</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Active Users</label>
+                        <div class="detail-value">
+                            <i class="bi bi-person-check text-success"></i>
+                            <span class="fw-semibold">@Model.ActiveUserCount</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Departments</label>
+                        <div class="detail-value">
+                            <i class="bi bi-diagram-3 text-info"></i>
+                            <span class="fw-semibold">@Model.DepartmentCount</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label text-muted">Timetables</label>
+                        <div class="detail-value">
+                            <i class="bi bi-clock-history text-primary"></i>
+                            <span class="fw-semibold">@Model.TimetableCount</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Created At</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-plus text-primary"></i>
+                            <span>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Last Updated</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-check text-primary"></i>
+                            <span>@(Model.UpdatedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "Never")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HR Staff -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-person-badge"></i>
+                <h5>HR Staff</h5>
+            </div>
+            <div class="section-body">
+                @if (Model.HRStaff.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var hr in Model.HRStaff)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                                    @hr.DisplayName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <span>@hr.DisplayName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-envelope text-muted me-1"></i>
+                                            @hr.Email
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(hr.Mobile))
+                                            {
+                                                <i class="bi bi-phone text-muted me-1"></i>
+                                                <span>@hr.Mobile</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(hr.DepartmentName))
+                                            {
+                                                <i class="bi bi-diagram-3 text-info me-1"></i>
+                                                <span>@hr.DepartmentName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(hr.IsActive ? "success" : "danger")">
+                                                @(hr.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-person-badge" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No HR staff assigned to this branch yet</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Managers -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-person-check"></i>
+                <h5>Managers</h5>
+            </div>
+            <div class="section-body">
+                @if (Model.Managers.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var manager in Model.Managers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                                    @manager.DisplayName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <span>@manager.DisplayName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-envelope text-muted me-1"></i>
+                                            @manager.Email
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(manager.Mobile))
+                                            {
+                                                <i class="bi bi-phone text-muted me-1"></i>
+                                                <span>@manager.Mobile</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(manager.DepartmentName))
+                                            {
+                                                <i class="bi bi-diagram-3 text-info me-1"></i>
+                                                <span>@manager.DepartmentName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(manager.IsActive ? "success" : "danger")">
+                                                @(manager.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-person-check" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No managers assigned to this branch yet</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Departments Management -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-diagram-3"></i>
+                <h5>Departments</h5>
+                <button type="button" class="btn btn-sm btn-primary ms-auto" onclick="showAddDepartmentModal()">
+                    <i class="bi bi-plus-circle"></i> Add Department
+                </button>
+            </div>
+            <div class="section-body">
+                @if (Model.Departments.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Department Name</th>
+                                    <th>Users</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var dept in Model.Departments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-diagram-3 text-info me-2"></i>
+                                            @dept.Name
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@dept.UserCount users</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(dept.IsActive ? "success" : "danger")">
+                                                @(dept.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="removeDepartment(@dept.Id, '@dept.Name')"
+                                                    title="Remove Department">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No departments created yet</p>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="showAddDepartmentModal()">
+                            <i class="bi bi-plus-circle"></i> Add First Department
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Timetables -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-clock-history"></i>
+                <h5>Timetables</h5>
+            </div>
+            <div class="section-body">
+                @if (Model.Timetables.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timetable Name</th>
+                                    <th>Working Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var timetable in Model.Timetables)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-clock-history text-primary me-2"></i>
+                                            @timetable.Name
+                                        </td>
+                                        <td>
+                                            @if (timetable.AverageWorkingHours.HasValue)
+                                            {
+                                                <span class="badge bg-info">@timetable.AverageWorkingHours hours</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not set</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(timetable.IsActive ? "success" : "danger")">
+                                                @(timetable.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-clock" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No timetables configured</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-submit">
+                <i class="bi bi-pencil"></i>
+                <span>Edit Branch</span>
+            </a>
+            <a asp-action="Index" class="btn-cancel">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Add Department Modal -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDepartmentForm">
+                    <input type="hidden" id="branchId" value="@Model.Id" />
+                    <div class="form-group">
+                        <label for="departmentName" class="form-label">Department Name</label>
+                        <input type="text" id="departmentName" class="form-control" placeholder="Enter department name" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addDepartment()">Add Department</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/branches.js" asp-append-version="true"></script>
+    <script src="~/js/branches-details.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-form.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/branches-details.css" asp-append-version="true" />
+}

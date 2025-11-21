@@ -1,0 +1,252 @@
+@model IEnumerable<CoreProject.ViewModels.BranchViewModel>
+@using CoreProject.Helpers
+@{
+    ViewData["Title"] = "Branches Management";
+
+    string GetTimeZoneName(int timeZone)
+    {
+        return timeZone switch
+        {
+            0 => "UTC",
+            1 => "Asia/Dubai (UAE)",
+            2 => "Africa/Cairo (Egypt)",
+            3 => "Europe/London (UK)",
+            4 => "America/New_York (EST)",
+            _ => "Not set"
+        };
+    }
+}
+
+<!-- Branches Header -->
+<div class="users-header">
+    <div class="users-header-top">
+        <div class="users-title">
+            <div class="title-icon">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1>Branches Management</h1>
+                <p class="text-muted mb-0">Manage organization branches and locations</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            <a asp-action="Create" class="btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add New Branch</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="users-stats">
+        <div class="stat-item">
+            <div class="stat-value">@Model.Count()</div>
+            <div class="stat-label">Total Branches</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-success">@Model.Count(b => b.IsActive)</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-danger">@Model.Count(b => !b.IsActive)</div>
+            <div class="stat-label">Inactive</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-primary">@Model.Sum(b => b.UserCount)</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filters -->
+<div class="users-table-container">
+    <div class="table-filters mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">
+                    <i class="bi bi-circle-fill me-1"></i>Filter by Status
+                </label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="typeFilter" class="form-label">
+                    <i class="bi bi-star-fill me-1"></i>Filter by Type
+                </label>
+                <select id="typeFilter" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="main">Main Branch</option>
+                    <option value="sub">Sub Branch</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="userCountFilter" class="form-label">
+                    <i class="bi bi-people me-1"></i>Filter by User Count
+                </label>
+                <select id="userCountFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="0">No Users (0)</option>
+                    <option value="1-10">1-10 Users</option>
+                    <option value="11-50">11-50 Users</option>
+                    <option value="51-100">51-100 Users</option>
+                    <option value="100+">100+ Users</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="searchBranch" class="form-label">
+                    <i class="bi bi-search me-1"></i>Search Branch
+                </label>
+                <input type="text" id="searchBranch" class="form-control" placeholder="Search by name...">
+            </div>
+        </div>
+    </div>
+
+<!-- Branches Table -->
+    @if (Model.Any())
+    {
+        <table class="users-table" id="branchesTable">
+            <thead>
+                <tr>
+                    <th>Branch Name</th>
+                    <th>Type</th>
+                    <th>Time Zone</th>
+                    <th>Weekend</th>
+                    <th>Departments</th>
+                    <th>Timetables</th>
+                    <th>Users</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var branch in Model)
+                {
+                    <tr data-status="@(branch.IsActive ? "active" : "inactive")"
+                        data-type="@(branch.IsMainBranch ? "main" : "sub")"
+                        data-user-count="@branch.UserCount"
+                        data-branch-name="@branch.Name.ToLower()">
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">@branch.Name</div>
+                                    <div class="user-email text-muted">Created @branch.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge @branch.MainBranchClass">
+                                @branch.MainBranchBadge
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-globe text-info"></i>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-semibold">@GetTimeZoneName(branch.TimeZone)</span>
+                                    <small class="text-muted">
+                                        @{
+                                            var offset = TimezoneHelper.GetTimezoneOffset(branch.TimeZone);
+                                        }
+                                        UTC @(offset.StartsWith("-") ? "" : "+")@offset
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-week text-warning"></i>
+                                <span>@(branch.Weekend ?? "Not set")</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-diagram-3 text-info"></i>
+                                <span class="fw-semibold">@branch.DepartmentCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-clock-history text-primary"></i>
+                                <span class="fw-semibold">@branch.TimetableCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-people text-success"></i>
+                                <span class="fw-semibold">@branch.UserCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-@branch.StatusClass">
+                                @branch.StatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view"
+                                        title="View Details"
+                                        onclick="viewBranch(@branch.Id)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn-icon btn-edit"
+                                        title="Edit Branch"
+                                        onclick="editBranch(@branch.Id)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn-icon btn-delete"
+                                        title="Delete Branch"
+                                        onclick="confirmDelete(@branch.Id, '@branch.Name')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-building"></i>
+            <h3>No Branches Found</h3>
+            <p>Get started by creating your first branch.</p>
+            <a asp-action="Create" class="btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add First Branch</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/branches.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+}

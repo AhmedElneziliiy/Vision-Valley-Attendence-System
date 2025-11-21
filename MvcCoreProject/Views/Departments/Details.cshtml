@@ -1,0 +1,206 @@
+@model CoreProject.ViewModels.DepartmentDetailsViewModel
+@{
+    ViewData["Title"] = "Department Details";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>Department Details</h1>
+                <p class="text-muted mb-0">View department information and users</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit Department</span>
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="create-user-form-container">
+        <!-- Status Badge -->
+        <div class="mb-4">
+            <span class="badge badge-@Model.StatusClass" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-circle-fill"></i> @Model.StatusBadge
+            </span>
+        </div>
+
+        <!-- Department Information -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-diagram-3"></i>
+                <h5>Department Information</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Department Name</label>
+                        <div class="detail-value">
+                            <i class="bi bi-diagram-3 text-primary"></i>
+                            <span>@Model.Name</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Branch</label>
+                        <div class="detail-value">
+                            <i class="bi bi-building text-primary"></i>
+                            <span>@Model.BranchName</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Created At</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-plus text-primary"></i>
+                            <span>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Last Updated</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-check text-primary"></i>
+                            <span>@(Model.UpdatedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "Never")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-graph-up"></i>
+                <h5>Statistics</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Total Users</label>
+                        <div class="detail-value">
+                            <i class="bi bi-people text-success"></i>
+                            <span class="fw-semibold">@Model.UserCount</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Active Users</label>
+                        <div class="detail-value">
+                            <i class="bi bi-person-check text-success"></i>
+                            <span class="fw-semibold">@Model.ActiveUserCount</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Users -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-people"></i>
+                <h5>Department Users</h5>
+            </div>
+            <div class="section-body">
+                @if (Model.Users.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="user-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                                    @user.DisplayName.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <span>@user.DisplayName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-envelope text-muted me-1"></i>
+                                            @user.Email
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(user.Mobile))
+                                            {
+                                                <i class="bi bi-phone text-muted me-1"></i>
+                                                <span>@user.Mobile</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (user.Roles.Any())
+                                            {
+                                                <span class="badge badge-@(user.Roles.First().ToLower() == "admin" ? "admin" : user.Roles.First().ToLower() == "hr" ? "hr" : user.Roles.First().ToLower() == "manager" ? "manager" : "employee")">
+                                                    @user.Roles.First()
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No Role</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(user.IsActive ? "success" : "danger")">
+                                                @(user.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-people" style="font-size: 3rem;"></i>
+                        <p class="mt-2">No users assigned to this department yet</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-submit">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit Department</span>
+                </a>
+            }
+            <a asp-action="Index" class="btn-cancel">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-form.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/detail-views.css" asp-append-version="true" />
+}

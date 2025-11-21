@@ -1,0 +1,9 @@
+.department-input-group {
+    position: relative;
+}
+.department-input-group .btn-danger {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}

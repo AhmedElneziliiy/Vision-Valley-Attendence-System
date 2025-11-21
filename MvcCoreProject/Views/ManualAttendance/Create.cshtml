@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Create Attendance Record";
+}
+
+<div class="mb-4">
+    <h2><i class="bi bi-plus-circle me-2"></i>Create Attendance Record</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Manual Attendance</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>New Attendance Record</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-building me-1"></i>Branch
+                        </label>
+                        <select id="branchSelect" class="form-select">
+                            <option value="">-- Select Branch First --</option>
+                            @foreach (var branch in (SelectList)ViewBag.Branches)
+                            {
+                                <option value="@branch.Value">@branch.Text</option>
+                            }
+                        </select>
+                        <div class="form-text">Select branch to filter employees</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person me-1"></i>Employee
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select name="userId" id="userSelect" class="form-select" required>
+                            <option value="">-- Select Employee --</option>
+                            @foreach (var user in (SelectList)ViewBag.Users)
+                            {
+                                <option value="@user.Value">@user.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar me-1"></i>Date
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" name="date" class="form-control" value="@ViewBag.DefaultDate" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-box-arrow-in-right text-success me-1"></i>Check-In Time
+                                </label>
+                                <input type="time" name="checkInTime" class="form-control" />
+                                <div class="form-text">Leave empty if no check-in</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-box-arrow-right text-danger me-1"></i>Check-Out Time
+                                </label>
+                                <input type="time" name="checkOutTime" class="form-control" />
+                                <div class="form-text">Leave empty if no check-out</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Create Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Help</h6>
+            </div>
+            <div class="card-body">
+                <h6>Creating Manual Attendance</h6>
+                <ul class="small">
+                    <li>Select the <strong>branch</strong> first to filter employees</li>
+                    <li>Choose the <strong>employee</strong> for whom you want to create attendance</li>
+                    <li>Select the <strong>date</strong> of the attendance</li>
+                    <li>Enter <strong>check-in</strong> and/or <strong>check-out</strong> times</li>
+                    <li>Duration will be calculated automatically</li>
+                </ul>
+
+                <div class="alert alert-warning small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <strong>Note:</strong> You cannot create a record if one already exists for the same user and date. Edit the existing record instead.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('branchSelect').addEventListener('change', function() {
+            const branchId = this.value;
+            const userSelect = document.getElementById('userSelect');
+
+            if (!branchId) {
+                // If no branch selected, reload all users
+                location.reload();
+                return;
+            }
+
+            fetch(`/ManualAttendance/GetUsersByBranch?branchId=${branchId}`)
+                .then(response => response.json())
+                .then(users => {
+                    userSelect.innerHTML = '<option value="">-- Select Employee --</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        userSelect.appendChild(option);
+                    });
+                });
+        });
+    </script>
+}

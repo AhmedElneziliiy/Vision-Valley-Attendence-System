@@ -1,0 +1,220 @@
+@model CoreProject.ViewModels.DeviceCreateViewModel
+@{
+    ViewData["Title"] = "Create New Device";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header device-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back device-back">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+            </a>
+            <div class="header-icon-wrapper">
+                <div class="header-icon">
+                    <i class="bi bi-hdd-network-fill"></i>
+                </div>
+            </div>
+            <div>
+                <h1>
+                    <i class="bi bi-plus-circle-fill me-2"></i>
+                    Create New Device
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-gear-fill me-2"></i>
+                    Configure a new attendance tracking device
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="create-user-form-container">
+        <form asp-action="Create" method="post" id="createDeviceForm">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <!-- Device Information -->
+            <div class="form-section device-section">
+                <div class="section-header">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <h5>Device Information</h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="DeviceType" class="form-label required">
+                                    <i class="bi bi-hdd-rack-fill me-2"></i>Device Type
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-hdd-rack"></i>
+                                    <select asp-for="DeviceType" asp-items="Model.DeviceTypes" class="form-control">
+                                        <option value="">-- Select Device Type --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="DeviceType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="BranchId" class="form-label required">
+                                    <i class="bi bi-building-fill me-2"></i>Branch
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-building"></i>
+                                    <select asp-for="BranchId" asp-items="Model.Branches" class="form-control">
+                                        <option value="">-- Select Branch --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="BranchId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Description" class="form-label">
+                                    <i class="bi bi-card-text me-2"></i>Description
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-text-paragraph"></i>
+                                    <textarea asp-for="Description" class="form-control" rows="2"
+                                              placeholder="Enter device description"></textarea>
+                                </div>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="CoverageArea" class="form-label">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Coverage Area (sq meters)
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-rulers"></i>
+                                    <input asp-for="CoverageArea" type="number" class="form-control"
+                                           placeholder="Enter coverage area" />
+                                </div>
+                                <span asp-validation-for="CoverageArea" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="AccessControlState" class="form-label">
+                                    <i class="bi bi-shield-fill-check me-2"></i>Access Control State
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                    <select asp-for="AccessControlState" asp-items="Model.AccessControlStates" class="form-control"></select>
+                                </div>
+                                <span asp-validation-for="AccessControlState" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="AccessControlURL" class="form-label">
+                                    <i class="bi bi-link-45deg me-2"></i>Access Control URL
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-globe"></i>
+                                    <input asp-for="AccessControlURL" type="text" class="form-control"
+                                           placeholder="https://example.com/api/access-control" />
+                                </div>
+                                <span asp-validation-for="AccessControlURL" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Settings -->
+            <div class="form-section device-section">
+                <div class="section-header">
+                    <i class="bi bi-sliders"></i>
+                    <h5>Device Settings</h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="device-switch-wrapper">
+                                    <div class="switch-icon">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsSignedIn" class="form-check-input" type="checkbox"
+                                               role="switch" checked>
+                                        <label class="form-check-label" asp-for="IsSignedIn">
+                                            <strong>Enable Sign In</strong>
+                                            <span class="switch-subtitle">Allow entry tracking</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="device-switch-wrapper">
+                                    <div class="switch-icon">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsSignedOut" class="form-check-input" type="checkbox"
+                                               role="switch" checked>
+                                        <label class="form-check-label" asp-for="IsSignedOut">
+                                            <strong>Enable Sign Out</strong>
+                                            <span class="switch-subtitle">Allow exit tracking</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <div class="device-switch-wrapper">
+                                    <div class="switch-icon">
+                                        <i class="bi bi-arrow-left-right"></i>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsPassThrough" class="form-check-input" type="checkbox"
+                                               role="switch">
+                                        <label class="form-check-label" asp-for="IsPassThrough">
+                                            <strong>Pass Through Mode</strong>
+                                            <span class="switch-subtitle">Bidirectional access</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions device-actions">
+                <button type="submit" class="btn-primary btn-submit-device">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Create Device</span>
+                </button>
+                <a asp-action="Index" class="btn-secondary btn-cancel-device">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/devices.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/create-user.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/devices-edit.css" asp-append-version="true" />
+}

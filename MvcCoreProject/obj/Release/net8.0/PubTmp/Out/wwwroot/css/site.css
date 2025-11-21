@@ -1,0 +1,124 @@
+﻿/* ------------------------------
+   🌐 Vision Valley Global Styles
+   ------------------------------ */
+
+/* ==== Base Theme Colors ==== */
+:root {
+    --primary-color: #f39c12;
+    --secondary-color: #bbbbbb;
+    --accent-color: #20c997;
+    --text-color: #212529;
+    --bg-light: #f8f9fa;
+    --bg-dark: #0a0a0a;
+}
+
+/* ==== Global Reset ==== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* ==== Buttons ==== */
+.btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+}
+
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+    }
+
+/* ==== Forms ==== */
+.form-control {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+/* ==== Cards / Containers ==== */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    background: #fff;
+}
+
+/* ==== Login Page ==== */
+.login-page {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-box {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    animation: fadeIn 0.8s ease;
+}
+
+    .login-box img {
+        width: 120px;
+        margin-bottom: 1.5rem;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==== Utilities ==== */
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.rounded-lg {
+    border-radius: 15px !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sidebar .nav-link {
+    transition: all 0.3s;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        transform: translateX(5px);
+    }
+
+    .sidebar .nav-link span {
+        font-weight: 500;
+    }

@@ -1,0 +1,250 @@
+@model IEnumerable<CoreProject.ViewModels.TimetableViewModel>
+@{
+    ViewData["Title"] = "Timetables Management";
+}
+
+<!-- Timetables Header -->
+<div class="users-header">
+    <div class="users-header-top">
+        <div class="users-title">
+            <div class="title-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h1>Timetables Management</h1>
+                <p class="text-muted mb-0">Manage working hours and schedules</p>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="users-actions">
+                <a asp-action="Create" class="btn-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add New Timetable</span>
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="users-stats">
+        <div class="stat-item">
+            <div class="stat-value">@Model.Count()</div>
+            <div class="stat-label">Total Timetables</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-success">@Model.Count(t => t.IsActive)</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-danger">@Model.Count(t => !t.IsActive)</div>
+            <div class="stat-label">Inactive</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-primary">@Model.Sum(t => t.UserCount)</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filters -->
+<div class="users-table-container">
+    <div class="table-filters mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">
+                    <i class="bi bi-circle-fill me-1"></i>Filter by Status
+                </label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="branchFilter" class="form-label">
+                    <i class="bi bi-building me-1"></i>Filter by Branch
+                </label>
+                <select id="branchFilter" class="form-select">
+                    <option value="">All Branches</option>
+                    @foreach (var branch in Model.Select(t => new { t.BranchId, t.BranchName }).Distinct())
+                    {
+                        <option value="@branch.BranchId">@branch.BranchName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="userCountFilter" class="form-label">
+                    <i class="bi bi-people me-1"></i>Filter by User Count
+                </label>
+                <select id="userCountFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="0">No Users (0)</option>
+                    <option value="1-10">1-10 Users</option>
+                    <option value="11-50">11-50 Users</option>
+                    <option value="51+">51+ Users</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="searchTimetable" class="form-label">
+                    <i class="bi bi-search me-1"></i>Search Timetable
+                </label>
+                <input type="text" id="searchTimetable" class="form-control" placeholder="Search by name...">
+            </div>
+        </div>
+    </div>
+
+<!-- Timetables Table -->
+    @if (Model.Any())
+    {
+        <table class="users-table" id="timetablesTable">
+            <thead>
+                <tr>
+                    <th>Timetable Name</th>
+                    <th>Branch</th>
+                    <th>Start Time (Min/Max)</th>
+                    <th>End Time</th>
+                    <th>Avg Hours</th>
+                    <th>Users</th>
+                    <th>Configs</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var timetable in Model)
+                {
+                    <tr data-status="@(timetable.IsActive ? "active" : "inactive")"
+                        data-branch-id="@timetable.BranchId"
+                        data-user-count="@timetable.UserCount"
+                        data-timetable-name="@timetable.Name.ToLower()">
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar">
+                                    <i class="bi bi-clock-history"></i>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">@timetable.Name</div>
+                                    <div class="user-email text-muted">
+                                        @if (timetable.IsWorkingDayEndingHourEnable)
+                                        {
+                                            <span><i class="bi bi-check-circle text-success"></i> End hour enforced</span>
+                                        }
+                                        else
+                                        {
+                                            <span><i class="bi bi-dash-circle text-muted"></i> Flexible end hour</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-building text-primary"></i>
+                                <span>@timetable.BranchName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-semibold">@(timetable.WorkingDayStartingHourMinimum ?? "Not set")</span>
+                                <small class="text-muted">@(timetable.WorkingDayStartingHourMaximum ?? "No max")</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-sunset text-warning"></i>
+                                <span>@(timetable.WorkingDayEndingHour ?? "Not set")</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-hourglass-split text-info"></i>
+                                <span class="fw-semibold">@timetable.WorkingHoursDisplay</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-people text-success"></i>
+                                <span class="fw-semibold">@timetable.UserCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-gear text-secondary"></i>
+                                <span class="fw-semibold">@timetable.ConfigurationCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-@timetable.StatusClass">
+                                @timetable.StatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view"
+                                        title="View Details"
+                                        onclick="viewTimetable(@timetable.Id)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <button class="btn-icon btn-edit"
+                                            title="Edit Timetable"
+                                            onclick="editTimetable(@timetable.Id)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn-icon btn-delete"
+                                            title="Delete Timetable"
+                                            onclick="confirmDelete(@timetable.Id, '@timetable.Name')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-clock-history"></i>
+            <h3>No Timetables Found</h3>
+            <p>Get started by creating your first timetable.</p>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Create" class="btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add First Timetable</span>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/timetables.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+}

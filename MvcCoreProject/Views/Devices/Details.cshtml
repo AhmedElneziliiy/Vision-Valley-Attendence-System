@@ -1,0 +1,182 @@
+@model CoreProject.ViewModels.DeviceDetailsViewModel
+@{
+    ViewData["Title"] = "Device Details";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>Device #@Model.Id</h1>
+                <p class="text-muted mb-0">Device information and configuration</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                <i class="bi bi-pencil"></i>
+                <span>Edit Device</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="create-user-form-container">
+        <!-- Main Info Cards Row -->
+        <div class="row g-4 mb-4">
+            <!-- Device Info Card -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-info-circle"></i>
+                        <h5>Device Information</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-phone text-info"></i>
+                                Mobile Device ID
+                            </div>
+                            <div class="info-value">
+                                <span class="font-monospace badge badge-secondary">@(Model.DeviceID ?? "Not Assigned")</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-tag text-primary"></i>
+                                Device Type
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-primary">@Model.DeviceTypeDisplay</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-building text-primary"></i>
+                                Branch
+                            </div>
+                            <div class="info-value">@Model.BranchName</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-power text-warning"></i>
+                                Status
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-@Model.IsActiveClass">@Model.IsActiveBadge</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                Coverage Area
+                            </div>
+                            <div class="info-value">@(Model.CoverageArea?.ToString() ?? "Not set")</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-text-left text-primary"></i>
+                                Description
+                            </div>
+                            <div class="info-value">@(Model.Description ?? "No description")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Settings Card -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-gear"></i>
+                        <h5>Device Settings</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-box-arrow-in-right text-success"></i>
+                                Sign In
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-@Model.SignInStatusClass">
+                                    @Model.SignInStatusBadge
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-box-arrow-right text-danger"></i>
+                                Sign Out
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-@Model.SignOutStatusClass">
+                                    @Model.SignOutStatusBadge
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-arrow-left-right text-info"></i>
+                                Pass Through Mode
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-@Model.PassThroughClass">
+                                    @Model.PassThroughBadge
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-shield-check text-primary"></i>
+                                Access Control
+                            </div>
+                            <div class="info-value">
+                                <span class="badge badge-@Model.AccessControlClass">
+                                    @Model.AccessControlBadge
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Access Control URL Card -->
+        @if (!string.IsNullOrEmpty(Model.AccessControlURL))
+        {
+            <div class="info-card mb-4">
+                <div class="info-card-header">
+                    <i class="bi bi-link-45deg"></i>
+                    <h5>Access Control URL</h5>
+                </div>
+                <div class="info-card-body">
+                    <div class="url-display">
+                        <i class="bi bi-globe text-primary"></i>
+                        <a href="@Model.AccessControlURL" target="_blank" class="url-link">
+                            @Model.AccessControlURL
+                            <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <a asp-action="Index" class="btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                <i class="bi bi-pencil"></i>
+                <span>Edit Device</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-form.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/devices.css" asp-append-version="true" />
+}

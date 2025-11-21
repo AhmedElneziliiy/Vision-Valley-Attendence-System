@@ -1,0 +1,260 @@
+@model CoreProject.ViewModels.TimetableDetailsViewModel
+@{
+    ViewData["Title"] = "Timetable Details";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>@Model.Name</h1>
+                <p class="text-muted mb-0">Timetable details and configuration</p>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="users-actions">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit Timetable</span>
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="create-user-form-container">
+        <!-- Status Badge -->
+        <div class="mb-4">
+            <span class="badge badge-@Model.StatusClass" style="font-size: 1.1rem; padding: 0.6rem 1.2rem;">
+                <i class="bi bi-circle-fill"></i> @Model.StatusBadge
+            </span>
+        </div>
+
+        <!-- Main Info Cards Row -->
+        <div class="row g-4 mb-4">
+            <!-- Basic Info Card -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-info-circle"></i>
+                        <h5>Basic Information</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-tag text-primary"></i>
+                                Timetable Name
+                            </div>
+                            <div class="info-value">@Model.Name</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-building text-primary"></i>
+                                Branch
+                            </div>
+                            <div class="info-value">@Model.BranchName</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-hourglass-split text-primary"></i>
+                                Average Working Hours
+                            </div>
+                            <div class="info-value">@Model.WorkingHoursDisplay</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-toggle-on text-primary"></i>
+                                End Hour Enforcement
+                            </div>
+                            <div class="info-value">
+                                @if (Model.IsWorkingDayEndingHourEnable)
+                                {
+                                    <span class="badge badge-success">
+                                        <i class="bi bi-check-circle"></i> Enabled
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary">
+                                        <i class="bi bi-x-circle"></i> Flexible
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Working Hours Card -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-clock"></i>
+                        <h5>Working Hours</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-sunrise text-warning"></i>
+                                Start Time (Minimum)
+                            </div>
+                            <div class="info-value">
+                                <span class="time-badge">
+                                    @(Model.WorkingDayStartingHourMinimum ?? "Not set")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-sunrise-fill text-warning"></i>
+                                Start Time (Maximum)
+                            </div>
+                            <div class="info-value">
+                                <span class="time-badge">
+                                    @(Model.WorkingDayStartingHourMaximum ?? "Not set")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="bi bi-sunset text-warning"></i>
+                                End Time
+                            </div>
+                            <div class="info-value">
+                                <span class="time-badge">
+                                    @(Model.WorkingDayEndingHour ?? "Not set")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stat-card stat-card-success">
+                    <div class="stat-card-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">@Model.UserCount</div>
+                        <div class="stat-card-label">Assigned Users</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card stat-card-info">
+                    <div class="stat-card-icon">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                    <div class="stat-card-content">
+                        <div class="stat-card-value">@Model.Configurations.Count</div>
+                        <div class="stat-card-label">Configurations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurations Section -->
+        @if (Model.Configurations.Any())
+        {
+            <div class="info-card mb-4">
+                <div class="info-card-header">
+                    <i class="bi bi-gear"></i>
+                    <h5>Additional Configurations</h5>
+                </div>
+                <div class="info-card-body">
+                    <div class="configurations-grid">
+                        @foreach (var config in Model.Configurations)
+                        {
+                            <div class="config-item">
+                                <div class="config-icon">
+                                    <i class="bi bi-sliders"></i>
+                                </div>
+                                <div class="config-details">
+                                    <div class="config-name">@config.ConfigurationName</div>
+                                    <div class="config-value">@config.Value</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Assigned Users Section -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="bi bi-people"></i>
+                <h5>Assigned Users (@Model.AssignedUsers.Count)</h5>
+            </div>
+            <div class="info-card-body">
+                @if (Model.AssignedUsers.Any())
+                {
+                    <div class="users-grid">
+                        @foreach (var user in Model.AssignedUsers)
+                        {
+                            <div class="user-card">
+                                <div class="user-card-avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="user-card-info">
+                                    <div class="user-card-name">@user.DisplayName</div>
+                                    <div class="user-card-email">@user.Email</div>
+                                    @if (!string.IsNullOrEmpty(user.DepartmentName))
+                                    {
+                                        <span class="user-card-dept">
+                                            <i class="bi bi-diagram-3"></i> @user.DepartmentName
+                                        </span>
+                                    }
+                                </div>
+                                <div class="user-card-status">
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state-small">
+                        <i class="bi bi-people"></i>
+                        <p class="text-muted mb-0">No users assigned to this timetable yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions mt-4">
+            <a asp-action="Index" class="btn-secondary">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit Timetable</span>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/create-user.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/timetables-details.css" asp-append-version="true" />
+}

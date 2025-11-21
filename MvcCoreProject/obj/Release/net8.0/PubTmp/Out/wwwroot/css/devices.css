@@ -1,0 +1,728 @@
+/* ============================================
+   Devices Management Styles
+   ============================================ */
+
+/* ============================================
+   1. DEVICES INDEX PAGE
+   ============================================ */
+
+/* Device Icon Customization */
+.device-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.device-icon i {
+    font-size: 2rem;
+}
+
+/* Enhanced Stats Cards */
+.devices-stats .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.devices-stats .stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.devices-stats .stat-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.75rem;
+}
+
+.stat-total .stat-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-success .stat-icon {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stat-primary .stat-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.stat-info .stat-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.devices-stats .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.devices-stats .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Enhanced Button */
+.btn-create-device {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: white;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-create-device:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+/* Filter Section */
+.device-filters {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.filter-label i {
+    color: #667eea;
+}
+
+.device-filters .input-with-icon {
+    position: relative;
+}
+
+.device-filters .input-with-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667eea;
+    font-size: 1.1rem;
+    z-index: 10;
+}
+
+.device-filters .form-select,
+.device-filters .form-control {
+    padding-left: 2.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.device-filters .form-select:focus,
+.device-filters .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+/* Table Action Buttons */
+.table-actions .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.table-actions .btn-view {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.table-actions .btn-edit {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.table-actions .btn-delete {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+}
+
+.table-actions .btn-icon:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Device Type Badge Icons */
+.users-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.users-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Empty State Enhancement */
+.empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.empty-state h3 {
+    margin-top: 1.5rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.empty-state p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* ============================================
+   2. DEVICE CREATE/EDIT FORMS
+   ============================================ */
+
+/* Device Header Enhancements */
+.device-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 0;
+}
+
+.device-header h1 {
+    color: white;
+    font-weight: 700;
+}
+
+.device-header p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.header-icon-wrapper {
+    display: inline-block;
+}
+
+.header-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.header-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.device-back {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.device-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Form Section Enhancements */
+.device-section {
+    border-left: 4px solid #667eea;
+}
+
+.device-section .section-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.device-section .section-header i {
+    color: #667eea;
+    font-size: 1.5rem;
+}
+
+/* Form Labels with Icons */
+.form-label i {
+    color: #667eea;
+}
+
+/* Device Switch Wrapper */
+.device-switch-wrapper {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    height: 100%;
+}
+
+.device-switch-wrapper:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.switch-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.switch-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-label {
+    margin-left: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-check-label strong {
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.switch-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Enhanced Buttons */
+.btn-submit-device {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.85rem 2rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: white;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-submit-device:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-cancel-device {
+    padding: 0.85rem 2rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel-device:hover {
+    background: #5a6268;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Input Enhancements */
+.input-with-icon i {
+    color: #667eea;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+}
+
+/* ============================================
+   3. DEVICE DETAILS PAGE
+   ============================================ */
+
+.device-details-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    border-radius: 16px 16px 0 0;
+    margin-bottom: 0;
+}
+
+.device-info-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.device-info-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.device-info-card .card-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-bottom: 2px solid #667eea;
+    padding: 1rem 1.5rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-radius: 10px 10px 0 0;
+}
+
+.device-info-card .card-header h5 {
+    margin: 0;
+    color: #667eea;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.device-info-card .card-header i {
+    font-size: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 180px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-label i {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.detail-value {
+    flex: 1;
+    color: #495057;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.status-indicator.active {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.status-indicator.inactive {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.status-indicator i {
+    font-size: 1.2rem;
+}
+
+/* ============================================
+   4. RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .device-header {
+        padding: 1.5rem;
+    }
+
+    .header-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .header-icon i {
+        font-size: 1.5rem;
+    }
+
+    .device-switch-wrapper {
+        padding: 1rem;
+    }
+
+    .switch-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .switch-icon i {
+        font-size: 1.2rem;
+    }
+
+    .devices-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .devices-stats .stat-item {
+        padding: 1rem;
+    }
+
+    .devices-stats .stat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+
+    .devices-stats .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .detail-label {
+        min-width: auto;
+    }
+}
+
+/* ============================================
+   5. UTILITIES
+   ============================================ */
+
+.badge-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Info Cards for Details Page */
+.info-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.info-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.info-card-header i {
+    font-size: 1.75rem;
+    opacity: 0.95;
+}
+
+.info-card-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.info-card-body {
+    padding: 2rem;
+}
+
+/* Info Items */
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-item:first-child {
+    padding-top: 0;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.info-label i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+/* URL Display */
+.url-display {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+}
+
+.url-display i {
+    font-size: 1.75rem;
+    color: #667eea;
+}
+
+.url-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    flex: 1;
+    word-break: break-all;
+    font-size: 1rem;
+}
+
+.url-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}

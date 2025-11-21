@@ -1,0 +1,209 @@
+@model IEnumerable<CoreProject.ViewModels.DepartmentViewModel>
+@{
+    ViewData["Title"] = "Departments Management";
+}
+
+<!-- Departments Header -->
+<div class="users-header">
+    <div class="users-header-top">
+        <div class="users-title">
+            <div class="title-icon">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+            <div>
+                <h1>Departments Management</h1>
+                <p class="text-muted mb-0">Manage organizational departments</p>
+            </div>
+        </div>
+        <div class="users-actions">
+            <a asp-action="Create" class="btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add New Department</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="users-stats">
+        <div class="stat-item">
+            <div class="stat-value">@Model.Count()</div>
+            <div class="stat-label">Total Departments</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-success">@Model.Count(d => d.IsActive)</div>
+            <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-danger">@Model.Count(d => !d.IsActive)</div>
+            <div class="stat-label">Inactive</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value text-primary">@Model.Sum(d => d.UserCount)</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Filters -->
+<div class="users-table-container">
+    <div class="table-filters mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="branchFilter" class="form-label">
+                    <i class="bi bi-building me-1"></i>Filter by Branch
+                </label>
+                <select id="branchFilter" class="form-select">
+                    <option value="">All Branches</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">
+                    <i class="bi bi-circle-fill me-1"></i>Filter by Status
+                </label>
+                <select id="statusFilter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="userCountFilter" class="form-label">
+                    <i class="bi bi-people me-1"></i>Filter by User Count
+                </label>
+                <select id="userCountFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="0">No Users (0)</option>
+                    <option value="1-5">1-5 Users</option>
+                    <option value="6-10">6-10 Users</option>
+                    <option value="11-20">11-20 Users</option>
+                    <option value="20+">20+ Users</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="searchDepartment" class="form-label">
+                    <i class="bi bi-search me-1"></i>Search Department
+                </label>
+                <input type="text" id="searchDepartment" class="form-control" placeholder="Search by name...">
+            </div>
+        </div>
+    </div>
+
+<!-- Departments Table -->
+    @if (Model.Any())
+    {
+        <table class="users-table" id="departmentsTable">
+            <thead>
+                <tr>
+                    <th>Department Name</th>
+                    <th>Branch</th>
+                    <th>Users</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dept in Model)
+                {
+                    <tr data-branch="@dept.BranchName"
+                        data-branch-id="@dept.BranchId"
+                        data-status="@(dept.IsActive ? "active" : "inactive")"
+                        data-user-count="@dept.UserCount"
+                        data-department-name="@dept.Name.ToLower()">
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="user-avatar">
+                                    <i class="bi bi-diagram-3"></i>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">@dept.Name</div>
+                                    <div class="user-email text-muted">@dept.BranchName</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-building text-primary"></i>
+                                <span>@dept.BranchName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-people text-success"></i>
+                                <span class="fw-semibold">@dept.UserCount</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-@dept.StatusClass">
+                                @dept.StatusBadge
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted">@dept.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view"
+                                        title="View Details"
+                                        onclick="viewDepartment(@dept.Id)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn-icon btn-edit"
+                                        title="Edit Department"
+                                        onclick="editDepartment(@dept.Id)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <button class="btn-icon btn-delete"
+                                            title="Delete Department"
+                                            onclick="confirmDelete(@dept.Id, '@dept.Name')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-diagram-3"></i>
+            <h3>No Departments Found</h3>
+            <p>Get started by creating your first department.</p>
+            <a asp-action="Create" class="btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add First Department</span>
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/departments.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+}

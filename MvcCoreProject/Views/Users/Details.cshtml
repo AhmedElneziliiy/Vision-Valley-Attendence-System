@@ -1,0 +1,214 @@
+@model CoreProject.ViewModels.UserDetailsViewModel
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>User Details</h1>
+                <p class="text-muted mb-0">View user information and profile</p>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+        {
+            <div class="users-actions">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit User</span>
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="create-user-form-container">
+        <!-- Status Badge -->
+        <div class="mb-4">
+            <span class="badge badge-@Model.StatusClass" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-circle-fill"></i> @Model.StatusBadge
+            </span>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-person-circle"></i>
+                <h5>Personal Information</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Full Name</label>
+                        <div class="detail-value">
+                            <i class="bi bi-person text-primary"></i>
+                            <span>@Model.DisplayName</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Email Address</label>
+                        <div class="detail-value">
+                            <i class="bi bi-envelope text-primary"></i>
+                            <span>@Model.Email</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Mobile Number</label>
+                        <div class="detail-value">
+                            <i class="bi bi-phone text-primary"></i>
+                            <span>@(Model.Mobile ?? "Not provided")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Gender</label>
+                        <div class="detail-value">
+                            <i class="bi bi-gender-ambiguous text-primary"></i>
+                            <span>@Model.GenderDisplay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label text-muted">Address</label>
+                        <div class="detail-value">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            <span>@(Model.Address ?? "Not provided")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organization Details -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-building"></i>
+                <h5>Organization Details</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Branch</label>
+                        <div class="detail-value">
+                            <i class="bi bi-building text-primary"></i>
+                            <span>@Model.BranchName</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Department</label>
+                        <div class="detail-value">
+                            <i class="bi bi-diagram-3 text-primary"></i>
+                            <span>@Model.DepartmentName</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Role</label>
+                        <div class="detail-value">
+                            <i class="bi bi-person-badge text-primary"></i>
+                            <span class="badge @Model.RoleBadgeClass">@Model.PrimaryRole</span>
+                            @if (Model.Roles.Count > 1)
+                            {
+                                <span class="text-muted ms-2">+@(Model.Roles.Count - 1) more</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Timetable</label>
+                        <div class="detail-value">
+                            <i class="bi bi-clock text-primary"></i>
+                            <span>@(Model.TimetableName ?? "Not assigned")</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.ManagerId.HasValue)
+                {
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label text-muted">Manager</label>
+                            <div class="detail-value">
+                                <i class="bi bi-person-badge text-primary"></i>
+                                <span>@Model.ManagerName</span>
+                                <span class="text-muted ms-2">(@Model.ManagerEmail)</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Employment Details -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="bi bi-briefcase"></i>
+                <h5>Employment Details</h5>
+            </div>
+            <div class="section-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Vacation Balance</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-event text-warning"></i>
+                            <span class="fw-semibold">@(Model.VacationBalance ?? 0) days</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Account Status</label>
+                        <div class="detail-value">
+                            <i class="bi bi-shield-check text-@Model.StatusClass"></i>
+                            <span class="badge badge-@Model.StatusClass">@Model.StatusBadge</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Created At</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-plus text-primary"></i>
+                            <span>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Last Updated</label>
+                        <div class="detail-value">
+                            <i class="bi bi-calendar-check text-primary"></i>
+                            <span>@(Model.UpdatedAt?.ToString("MMM dd, yyyy hh:mm tt") ?? "Never")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-submit">
+                    <i class="bi bi-pencil"></i>
+                    <span>Edit User</span>
+                </a>
+            }
+            <a asp-action="Index" class="btn-cancel">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to List</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-form.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/detail-views.css" asp-append-version="true" />
+}

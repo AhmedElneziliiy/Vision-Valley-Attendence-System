@@ -1,0 +1,24 @@
+.timeline-item {
+    position: relative;
+    padding-left: 0;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: -20px;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+#currentTime {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.btn-lg i.display-6 {
+    font-size: 3rem;
+}

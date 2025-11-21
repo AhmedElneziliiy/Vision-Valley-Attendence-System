@@ -1,0 +1,156 @@
+@model CoreProject.ViewModels.BranchEditViewModel
+@{
+    ViewData["Title"] = "Edit Branch";
+}
+
+<div class="create-user-container">
+    <div class="create-user-header">
+        <div class="d-flex align-items-center gap-3">
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1>Edit Branch</h1>
+                <p class="text-muted mb-0">Update branch information and settings</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="create-user-form-container">
+        <form asp-action="Edit" method="post" id="editBranchForm">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Branch Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="bi bi-building"></i>
+                    <h5>Branch Information</h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Name" class="form-label required">Branch Name</label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-building"></i>
+                                    <input asp-for="Name" class="form-control" placeholder="Enter branch name" />
+                                </div>
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="OrganizationId" class="form-label required">Organization</label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-briefcase"></i>
+                                    <select asp-for="OrganizationId" asp-items="Model.Organizations" class="form-control"></select>
+                                </div>
+                                <span asp-validation-for="OrganizationId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="TimeZone" class="form-label">Time Zone</label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-clock"></i>
+                                    <select asp-for="TimeZone" asp-items="Model.TimeZones" class="form-control">
+                                        <option value="">-- Select Time Zone --</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="TimeZone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Weekend" class="form-label">Weekend Days</label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-calendar-week"></i>
+                                    <input asp-for="Weekend" class="form-control" placeholder="e.g., Friday,Saturday" />
+                                </div>
+                                <span asp-validation-for="Weekend" class="text-danger"></span>
+                                <small class="text-muted">Comma-separated (e.g., Friday,Saturday)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="NationalHolidays" class="form-label">National Holidays</label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <textarea asp-for="NationalHolidays" class="form-control" rows="2"
+                                              placeholder='JSON array: ["2025-01-01", "2025-12-25"]'></textarea>
+                                </div>
+                                <span asp-validation-for="NationalHolidays" class="text-danger"></span>
+                                <small class="text-muted">JSON format: ["YYYY-MM-DD", "YYYY-MM-DD"]</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check form-switch" style="padding-left: 3rem; padding-top: 0.5rem;">
+                                    <input asp-for="IsMainBranch" class="form-check-input" type="checkbox"
+                                           role="switch" style="width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2" asp-for="IsMainBranch">
+                                        Main Branch (Headquarters)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="form-check form-switch" style="padding-left: 3rem; padding-top: 0.5rem;">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox"
+                                           role="switch" id="isActiveSwitch" style="width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2" for="isActiveSwitch">
+                                        <span id="activeLabel">@(Model.IsActive ? "Active" : "Inactive")</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">Inactive branches cannot be assigned to users</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Update Branch</span>
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn-secondary">
+                    <i class="bi bi-eye"></i>
+                    <span>View Details</span>
+                </a>
+                <a asp-action="Index" class="btn-cancel">
+                    <i class="bi bi-x-circle"></i>
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Update active label when checkbox changes
+        document.getElementById('isActiveSwitch').addEventListener('change', function() {
+            document.getElementById('activeLabel').textContent = this.checked ? 'Active' : 'Inactive';
+        });
+    </script>
+    <script src="~/js/branches.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-form.css" asp-append-version="true" />
+}

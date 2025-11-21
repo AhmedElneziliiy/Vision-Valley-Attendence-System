@@ -1,0 +1,246 @@
+@model CoreProject.Models.Lamp
+
+@{
+    ViewData["Title"] = "Edit Lamp";
+}
+
+<div class="mb-4">
+    <h2><i class="bi bi-pencil me-2"></i>Edit Lamp</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Lamps</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Edit Lamp: @Model.Name</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <input type="hidden" asp-for="ID" />
+
+                    <div class="mb-3">
+                        <label asp-for="DeviceID" class="form-label">
+                            <i class="bi bi-key me-1"></i>Device ID
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="DeviceID" class="form-control" />
+                        <div class="form-text">
+                            Must match the device_id configured in the ESP32 firmware.
+                        </div>
+                        <span asp-validation-for="DeviceID" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">
+                            <i class="bi bi-tag me-1"></i>Lamp Name
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">
+                            <i class="bi bi-card-text me-1"></i>Description
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="BranchID" class="form-label">
+                            <i class="bi bi-building me-1"></i>Branch
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="BranchID" class="form-select" asp-items="ViewBag.BranchID" id="branchSelect">
+                            <option value="">-- Select Branch --</option>
+                        </select>
+                        <span asp-validation-for="BranchID" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="TimetableID" class="form-label">
+                            <i class="bi bi-clock me-1"></i>Timetable
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="TimetableID" class="form-select" asp-items="ViewBag.TimetableID" id="timetableSelect">
+                            <option value="">-- Select Timetable --</option>
+                        </select>
+                        <div class="form-text">
+                            Timetables are filtered by selected branch. The lamp will turn ON/OFF based on these hours.
+                        </div>
+                        <span asp-validation-for="TimetableID" class="text-danger"></span>
+                    </div>
+
+                    @if (Model.IsConnected)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-wifi me-2"></i>
+                            <strong>Connected:</strong> This lamp is currently connected via WebSocket.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-wifi-off me-2"></i>
+                            <strong>Disconnected:</strong> This lamp is not currently connected. Changes will take effect when it reconnects.
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Current Status</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <th>Current State:</th>
+                        <td>
+                            @if (Model.CurrentState == 1)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-lightbulb-fill me-1"></i>ON
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-lightbulb me-1"></i>OFF
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Connection:</th>
+                        <td>
+                            @if (Model.IsConnected)
+                            {
+                                <span class="badge bg-success">Connected</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Disconnected</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Manual Override:</th>
+                        <td>
+                            @if (Model.ManualOverride)
+                            {
+                                <span class="badge bg-warning text-dark">Enabled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">Disabled</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Last Changed:</th>
+                        <td>
+                            @if (Model.LastStateChange.HasValue)
+                            {
+                                @Model.LastStateChange.Value.ToString("g")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Never</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+
+                <a asp-action="Details" asp-route-id="@Model.ID" class="btn btn-info btn-sm w-100">
+                    <i class="bi bi-eye me-1"></i>View Full Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // All timetables data from server
+        const allTimetables = @Html.Raw(ViewBag.AllTimetablesJson ?? "[]");
+        const currentBranchId = @Model.BranchID;
+        const currentTimetableId = @Model.TimetableID;
+
+        // Branch selection change handler
+        document.getElementById('branchSelect').addEventListener('change', function() {
+            const branchId = parseInt(this.value);
+            const timetableSelect = document.getElementById('timetableSelect');
+
+            // Clear current options
+            timetableSelect.innerHTML = '<option value="">-- Select Timetable --</option>';
+
+            if (branchId) {
+                // Filter timetables for selected branch
+                const branchTimetables = allTimetables.filter(t => t.branchId === branchId);
+
+                if (branchTimetables.length === 0) {
+                    timetableSelect.innerHTML = '<option value="">No timetables for this branch</option>';
+                } else {
+                    // Add filtered timetables
+                    branchTimetables.forEach(timetable => {
+                        const option = document.createElement('option');
+                        option.value = timetable.id;
+                        option.textContent = timetable.name;
+                        timetableSelect.appendChild(option);
+                    });
+                }
+            }
+        });
+
+        // Trigger change on page load to filter timetables for current branch
+        document.addEventListener('DOMContentLoaded', function() {
+            const branchSelect = document.getElementById('branchSelect');
+            const event = new Event('change');
+            branchSelect.dispatchEvent(event);
+
+            // After filtering, select the current timetable
+            setTimeout(() => {
+                document.getElementById('timetableSelect').value = currentTimetableId;
+            }, 100);
+        });
+    </script>
+}

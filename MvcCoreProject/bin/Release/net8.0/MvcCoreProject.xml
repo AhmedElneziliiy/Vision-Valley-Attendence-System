@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MvcCoreProject</name>
+    </assembly>
+    <members>
+        <member name="T:MvcCoreProject.Controllers.Api.AttendanceApiController">
+            <summary>
+            API controller for mobile app attendance operations (check-in/check-out)
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.ProcessAttendanceAction(CoreProject.Utilities.DTOs.AttendanceActionRequestDto)">
+             <summary>
+             Process attendance action (check-in or check-out)
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 POST /api/attendance/action
+                 {
+                     "username": "hussein.mohamed@visionvalley.net",
+                     "udid": "6c72cf5c980bd5c1",
+                     "deviceID": "100000000",
+                     "actionType": "CheckIn"
+                 }
+            
+             ActionType must be either "CheckIn" or "CheckOut"
+            
+             User must be authenticated (requires JWT token in Authorization header)
+            
+             Validations performed:
+             - User exists and is active
+             - UDID matches user's registered device
+             - Device exists and is active
+             - User is assigned to the same branch as the device
+             - Timezone handling for branch location (Egypt, Dubai, etc.)
+             - Check-out requires previous check-in on the same day
+            
+             Returns:
+             - Success/failure status
+             - Attendance data including check-in time, check-out time, duration, status (on time/late)
+             - Timezone-adjusted times
+             </remarks>
+             <param name="request">Attendance action request</param>
+             <returns>Attendance action response with attendance data</returns>
+             <response code="200">Action processed successfully</response>
+             <response code="400">Invalid request (validation errors)</response>
+             <response code="401">User not authorized</response>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.GetAttendanceReport(CoreProject.Utilities.DTOs.AttendanceReportRequestDto)">
+             <summary>
+             Get attendance report for the authenticated user
+             </summary>
+             <remarks>
+             Sample requests:
+            
+                 GET /api/attendance/report
+                 (Returns current month report)
+            
+                 GET /api/attendance/report?dateFrom=2025-01-01&amp;dateTo=2025-01-31
+                 (Returns report for specified date range)
+            
+             User must be authenticated (requires JWT token in Authorization header)
+             User ID is extracted from the JWT token automatically
+            
+             Date parameters are optional:
+             - If not provided, defaults to current month (1st day to today)
+             - dateFrom: Start date for the report
+             - dateTo: End date for the report (cannot be in the future)
+            
+             Returns:
+             - Daily attendance records with check-in, check-out, duration, and status
+             - Vacation days from branch settings (weekends and national holidays)
+             - Summary statistics (total working days, present days, absent days, etc.)
+             - Expected check-in/check-out times from user's timetable
+             </remarks>
+             <param name="request">Optional date range filter</param>
+             <returns>Attendance report with daily records and statistics</returns>
+             <response code="200">Report generated successfully</response>
+             <response code="400">Invalid request</response>
+             <response code="401">User not authorized</response>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.Passthrough(CoreProject.Utilities.DTOs.PassthroughRequestDto)">
+             <summary>
+             Process passthrough access control verification
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 POST /api/attendance/passthrough
+                 {
+                     "username": "hussein.mohamed@visionvalley.net",
+                     "udid": "6c72cf5c980bd5c1",
+                     "deviceID": "100000000"
+                 }
+            
+             User must be authenticated (requires JWT token in Authorization header)
+            
+             Validations performed:
+             - User exists and is active
+             - UDID matches user's registered device
+             - Device exists and is active
+             - User is assigned to the same branch as the device
+             - Sets AccessControlState to 1 for the device
+            
+             Returns:
+             - Access granted/denied status
+             - Current AccessControlState value
+             - User and branch information
+             </remarks>
+             <param name="request">Passthrough request</param>
+             <returns>Passthrough response with access granted/denied status</returns>
+             <response code="200">Request processed successfully</response>
+             <response code="400">Invalid request (validation errors)</response>
+             <response code="401">User not authorized</response>
+        </member>
+        <member name="T:MvcCoreProject.Controllers.Api.AuthApiController">
+            <summary>
+            Authentication API Controller for Mobile App Integration
+            Thin controller that delegates business logic to AuthApiService
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AuthApiController.Login(CoreProject.Utilities.DTOs.LoginRequestDto)">
+            <summary>
+            Login endpoint for mobile app
+            Validates credentials, binds device UDID, and returns JWT token with user data
+            </summary>
+            <param name="request">Login credentials including email, password, and UDID</param>
+            <returns>JWT token and complete user data including organization, branch, department, and role info</returns>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AuthApiController.Reset(CoreProject.Utilities.DTOs.ResetRequestDto)">
+             <summary>
+             Reset endpoint - Resets password to default (Pass@123)
+             Validates that the UDID matches the user's registered device
+             Used when user forgets password but still has access to their registered device
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 POST /api/authapi/reset
+                 {
+                     "email": "hussein.mohamed@visionvalley.net",
+                     "udid": "6c72cf5c980bd5c1"
+                 }
+            
+             The UDID must match the device registered to this user account.
+             If successful, password is reset to "Pass@123"
+             </remarks>
+             <param name="request">Email and current device UDID</param>
+             <returns>Success or error message</returns>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AuthApiController.ChangePassword(CoreProject.Utilities.DTOs.ChangePasswordRequestDto)">
+            <summary>
+            Change Password endpoint - Requires authentication via JWT token
+            Allows authenticated users to change their password
+            </summary>
+            <param name="request">Old password, new password, and confirmation</param>
+            <returns>Success or error message</returns>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AuthApiController.IsValidEmail(System.String)">
+            <summary>
+            Helper method to validate email format
+            </summary>
+        </member>
+        <member name="T:MvcCoreProject.Controllers.Api.DeviceApiController">
+            <summary>
+            High-performance API controller for hardware devices
+            Optimized for 10-15 requests per second
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:MvcCoreProject.Controllers.Api.DeviceApiController.GetAccessControlState(System.String)" -->
+        <member name="M:MvcCoreProject.Controllers.Api.DeviceApiController.GetAccessControlStateByPath(System.String)">
+            <summary>
+            Alternative endpoint using URL path parameter
+            Example: GET /api/device/access-control/device123
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.DeviceApiController.GetDeviceStatus(System.Int32)">
+            <summary>
+            Get specific column value - Optimized for high-frequency calls
+            Example: GET /api/device/status/123
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.DeviceApiController.GetBatchDeviceStatus(System.Int32[])">
+            <summary>
+            Batch endpoint - Get multiple values in one request
+            This reduces network overhead if hardware can batch requests
+            Example: POST /api/device/status/batch
+            Body: [1, 2, 3, 4, 5]
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.DeviceApiController.HealthCheck">
+            <summary>
+            Health check endpoint for hardware to verify API is running
+            Example: GET /api/device/health
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseWebSocketConfiguration(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Configure WebSocket support for ESP32 lamp connections
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseSwaggerConfiguration(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Configure Swagger UI for API documentation
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseJwtCookieMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Add middleware to read JWT from cookie and add to Authorization header
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseLampWebSocket(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Add WebSocket middleware for lamp device connections
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddDatabaseContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Add Database Context (Entity Framework Core with SQL Server)
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddIdentityConfiguration(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add ASP.NET Core Identity with custom ApplicationUser and int keys
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddJwtAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Add JWT Authentication with cookie fallback for web app
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add all Repository registrations
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddBusinessServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add all Business Service registrations
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddLampServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add Lamp WebSocket and Background Scheduler services
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddSwaggerConfiguration(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add Swagger/OpenAPI with JWT Bearer authentication
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddCorsConfiguration(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add CORS policy for API access from hardware devices
+            </summary>
+        </member>
+        <member name="T:MvcCoreProject.Middleware.WebSocketMiddleware">
+            <summary>
+            Middleware to handle WebSocket connections for ESP32 lamp devices
+            Listens on /ws endpoint
+            </summary>
+        </member>
+    </members>
+</doc>
