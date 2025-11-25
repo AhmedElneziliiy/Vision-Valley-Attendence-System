@@ -323,11 +323,11 @@ namespace MvcCoreProject.Controllers
                 var result = await _userService.ResetUserPasswordAsync(id);
                 if (result)
                 {
-                    TempData["Success"] = "Password reset successfully! New password is: Pass@123";
+                    TempData["Success"] = "Password and UDID reset successfully! New password is: Pass@123";
                 }
                 else
                 {
-                    TempData["Error"] = "User not found or password could not be reset.";
+                    TempData["Error"] = "User not found or password/UDID could not be reset.";
                 }
             }
             catch (Exception ex)

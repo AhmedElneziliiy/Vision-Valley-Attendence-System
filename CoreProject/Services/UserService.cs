@@ -582,7 +582,7 @@ namespace CoreProject.Services
         {
             try
             {
-                _logger.LogInformation("Resetting password for user: {UserId}", userId);
+                _logger.LogInformation("Resetting password and UDID for user: {UserId}", userId);
 
                 var user = await _context.Users
                     .IgnoreQueryFilters()
@@ -607,15 +607,17 @@ namespace CoreProject.Services
                     return false;
                 }
 
+                // Reset UDID to null (for MVC reset only)
+                user.UDID = null;
                 user.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Password reset successfully for user: {UserId}", userId);
+                _logger.LogInformation("Password and UDID reset successfully for user: {UserId}", userId);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error resetting password for user: {UserId}", userId);
+                _logger.LogError(ex, "Error resetting password and UDID for user: {UserId}", userId);
                 return false;
             }
         }
