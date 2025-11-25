@@ -179,6 +179,29 @@ namespace MvcCoreProject.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> ExportUsersPdf(int? branchId = null, string? role = null)
+        {
+            try
+            {
+                var users = await _userService.GetFilteredUsersAsync(branchId, role, User);
+
+                // Generate PDF
+                var pdfService = new CoreProject.Services.PdfExportService();
+                var pdfBytes = pdfService.GenerateUsersReportPdf(users);
+
+                // Return as file download
+                var fileName = $"Users_Report_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting users as PDF");
+                TempData["Error"] = "Unable to export users as PDF.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             try

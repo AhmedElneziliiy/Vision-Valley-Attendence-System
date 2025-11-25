@@ -10,10 +10,18 @@
             <h2 class="mb-1">Branch Attendance</h2>
             <p class="text-muted mb-0">Monitor attendance across all branches</p>
         </div>
-        <div>
+        <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
                 <i class="bi bi-funnel"></i> Filter by Date
             </button>
+            <a asp-action="ExportBranchAttendanceCsv" asp-route-startDate="@Model.StartDate.ToString("yyyy-MM-dd")" asp-route-endDate="@Model.EndDate.ToString("yyyy-MM-dd")"
+               class="btn btn-success">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+            </a>
+            <a asp-action="ExportBranchAttendancePdf" asp-route-startDate="@Model.StartDate.ToString("yyyy-MM-dd")" asp-route-endDate="@Model.EndDate.ToString("yyyy-MM-dd")"
+               class="btn btn-danger">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
         </div>
     </div>
 

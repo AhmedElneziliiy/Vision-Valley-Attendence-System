@@ -142,13 +142,22 @@ async function deleteUser(userId) {
     }
 }
 
-// Export users
+// Export users as CSV
 function exportUsers() {
     const form = document.getElementById('filterForm');
     const formData = new FormData(form);
     const params = new URLSearchParams(formData);
 
     window.location.href = `/Users/ExportUsers?${params.toString()}`;
+}
+
+// Export users as PDF
+function exportUsersPdf() {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+
+    window.location.href = `/Users/ExportUsersPdf?${params.toString()}`;
 }
 
 // Toast notification

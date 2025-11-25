@@ -1,3 +1,5 @@
+using FaceRecognition.Core;
+using FaceRecognition.Core.Configuration;
 using MvcCoreProject.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers (MVC + API)
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
-
 // Database
 builder.Services.AddDatabaseContext(builder.Configuration);
 
@@ -35,6 +36,9 @@ builder.Services.AddCorsConfiguration();
 // ============================================
 // APPLICATION PIPELINE
 // ============================================
+builder.Services.Configure<FaceRecognitionOptions>(
+    builder.Configuration.GetSection("FaceRecognition"));
+builder.Services.AddFaceRecognition();
 
 var app = builder.Build();
 

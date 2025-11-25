@@ -1,0 +1,3 @@
+dotnet nuget add source "D:\PythonAPI_AI_Models\FaceRecognition.DotNet\src\FaceRecognition.Core\bin\Release" --name "LocalFaceRecognition"
+
+dotnet add package FaceRecognition.Core --version 1.0.0

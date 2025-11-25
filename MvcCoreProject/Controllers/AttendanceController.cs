@@ -510,5 +510,141 @@ namespace MvcCoreProject.Controllers
                 return RedirectToAction(nameof(Reports), new { startDate, endDate, userId });
             }
         }
+
+        // GET: Attendance/ExportReportPdf - Export attendance report as PDF
+        [HttpGet]
+        [Authorize(Roles = "Admin,HR,Manager")]
+        public async Task<IActionResult> ExportReportPdf(DateTime? startDate, DateTime? endDate, int? userId)
+        {
+            try
+            {
+                var start = startDate ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+                var end = endDate ?? DateTime.UtcNow.Date;
+
+                _logger.LogInformation("Exporting attendance report as PDF: Start={Start}, End={End}, UserId={UserId}", start, end, userId);
+
+                var report = await _attendanceService.GetAttendanceReportAsync(User, start, end, userId);
+
+                _logger.LogInformation("Report retrieved with {Count} attendance records", report.Attendances?.Count() ?? 0);
+
+                if (report.Attendances == null || !report.Attendances.Any())
+                {
+                    _logger.LogWarning("No attendance records found for export");
+                    TempData["Error"] = "No attendance records found for the selected period.";
+                    return RedirectToAction(nameof(Reports), new { startDate, endDate, userId });
+                }
+
+                // Get user name if userId is provided
+                string? userName = null;
+                if (userId.HasValue)
+                {
+                    var user = await _userManager.FindByIdAsync(userId.Value.ToString());
+                    userName = user?.DisplayName;
+                }
+
+                // Generate PDF
+                var pdfService = new CoreProject.Services.PdfExportService();
+                var pdfBytes = pdfService.GenerateAttendanceReportPdf(report.Attendances, start, end, userName);
+
+                var fileName = $"Attendance_Report_{start:yyyyMMdd}_{end:yyyyMMdd}.pdf";
+
+                _logger.LogInformation("PDF file generated: {FileName}, Size: {Size} bytes", fileName, pdfBytes.Length);
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting attendance report as PDF");
+                TempData["Error"] = $"Failed to export PDF report: {ex.Message}";
+                return RedirectToAction(nameof(Reports), new { startDate, endDate, userId });
+            }
+        }
+
+        // GET: Attendance/ExportBranchAttendanceCsv - Export branch attendance as CSV
+        [HttpGet]
+        [Authorize(Roles = "Admin,HR,Manager")]
+        public async Task<IActionResult> ExportBranchAttendanceCsv(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                var start = startDate ?? DateTime.UtcNow.Date;
+                var end = endDate ?? DateTime.UtcNow.Date;
+
+                _logger.LogInformation("Exporting branch attendance as CSV: Start={Start}, End={End}", start, end);
+
+                var model = await _attendanceService.GetBranchAttendanceAsync(User, start, end);
+
+                if (model.Branches == null || !model.Branches.Any())
+                {
+                    _logger.LogWarning("No branch attendance data found for export");
+                    TempData["Error"] = "No attendance data found for the selected period.";
+                    return RedirectToAction(nameof(BranchAttendance), new { startDate, endDate });
+                }
+
+                var csv = new System.Text.StringBuilder();
+                csv.AppendLine("Branch,User Name,Email,Department,Check In,Check Out,Duration (Hours),Status");
+
+                foreach (var branch in model.Branches)
+                {
+                    foreach (var user in branch.Users)
+                    {
+                        var durationHours = user.Duration > 0 ? $"{user.Duration / 60.0:F2}" : "0.00";
+                        csv.AppendLine($"\"{branch.BranchName}\",\"{user.UserName}\",\"{user.Email}\",\"{user.Department}\",\"{user.FirstCheckIn ?? ""}\",\"{user.LastCheckOut ?? ""}\",\"{durationHours}\",\"{user.Status}\"");
+                    }
+                }
+
+                var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+                var fileName = $"Branch_Attendance_{start:yyyyMMdd}_{end:yyyyMMdd}.csv";
+
+                _logger.LogInformation("CSV file generated: {FileName}, Size: {Size} bytes", fileName, bytes.Length);
+
+                return File(bytes, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting branch attendance as CSV");
+                TempData["Error"] = $"Failed to export CSV: {ex.Message}";
+                return RedirectToAction(nameof(BranchAttendance), new { startDate, endDate });
+            }
+        }
+
+        // GET: Attendance/ExportBranchAttendancePdf - Export branch attendance as PDF
+        [HttpGet]
+        [Authorize(Roles = "Admin,HR,Manager")]
+        public async Task<IActionResult> ExportBranchAttendancePdf(DateTime? startDate, DateTime? endDate)
+        {
+            try
+            {
+                var start = startDate ?? DateTime.UtcNow.Date;
+                var end = endDate ?? DateTime.UtcNow.Date;
+
+                _logger.LogInformation("Exporting branch attendance as PDF: Start={Start}, End={End}", start, end);
+
+                var model = await _attendanceService.GetBranchAttendanceAsync(User, start, end);
+
+                if (model.Branches == null || !model.Branches.Any())
+                {
+                    _logger.LogWarning("No branch attendance data found for export");
+                    TempData["Error"] = "No attendance data found for the selected period.";
+                    return RedirectToAction(nameof(BranchAttendance), new { startDate, endDate });
+                }
+
+                // Generate PDF
+                var pdfService = new CoreProject.Services.PdfExportService();
+                var pdfBytes = pdfService.GenerateBranchAttendanceReportPdf(model);
+
+                var fileName = $"Branch_Attendance_{start:yyyyMMdd}_{end:yyyyMMdd}.pdf";
+
+                _logger.LogInformation("PDF file generated: {FileName}, Size: {Size} bytes", fileName, pdfBytes.Length);
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error exporting branch attendance as PDF");
+                TempData["Error"] = $"Failed to export PDF: {ex.Message}";
+                return RedirectToAction(nameof(BranchAttendance), new { startDate, endDate });
+            }
+        }
     }
 }

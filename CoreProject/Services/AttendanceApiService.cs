@@ -860,5 +860,234 @@ namespace CoreProject.Services
         }
 
         #endregion
+
+        #region User Status and Profile
+
+        /// <summary>
+        /// Checks if the user is currently checked in or out for today
+        /// </summary>
+        public async Task<UserStatusResponseDto> CheckUserStatusAsync(int userId)
+        {
+            try
+            {
+                // Get user with timetable
+                var user = await _userManager.Users
+                    .Include(u => u.Branch)
+                    .Include(u => u.Timetable)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User status check failed: User not found - {UserId}", userId);
+                    return new UserStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
+                // Get current date in user's timezone
+                var userTimezone = user.Branch?.TimeZone ?? 0;
+                var currentUtcDate = DateTime.UtcNow;
+                var currentLocalDate = _timezoneService.ConvertUtcToLocal(currentUtcDate, userTimezone);
+
+                // Find today's attendance record
+                var todayAttendance = await _context.Attendances
+                    .Where(a => a.UserID == userId && a.Date.Date == currentLocalDate.Date)
+                    .FirstOrDefaultAsync();
+
+                // Determine status
+                string status;
+                if (todayAttendance == null)
+                {
+                    status = "NotCheckedIn";
+                }
+                else if (!string.IsNullOrEmpty(todayAttendance.LastCheckOut))
+                {
+                    status = "CheckedOut";
+                }
+                else
+                {
+                    status = "CheckedIn";
+                }
+
+                // Calculate duration if checked out
+                int? durationMinutes = todayAttendance?.Duration;
+                string? durationFormatted = null;
+                if (todayAttendance?.Duration > 0)
+                {
+                    var hours = todayAttendance.Duration / 60;
+                    var minutes = todayAttendance.Duration % 60;
+                    durationFormatted = $"{hours:D2}:{minutes:D2}";
+                }
+
+                // Get expected times from timetable
+                TimeSpan? expectedCheckInTime = null;
+                TimeSpan? expectedCheckOutTime = null;
+                if (user.Timetable != null)
+                {
+                    if (!string.IsNullOrEmpty(user.Timetable.WorkingDayStartingHourMinimum))
+                        expectedCheckInTime = TimeSpan.Parse(user.Timetable.WorkingDayStartingHourMinimum);
+
+                    if (!string.IsNullOrEmpty(user.Timetable.WorkingDayEndingHour))
+                        expectedCheckOutTime = TimeSpan.Parse(user.Timetable.WorkingDayEndingHour);
+                }
+
+                // Parse check-in and check-out times
+                TimeSpan? checkInTime = null;
+                TimeSpan? checkOutTime = null;
+                if (!string.IsNullOrEmpty(todayAttendance?.FirstCheckIn))
+                    checkInTime = TimeSpan.Parse(todayAttendance.FirstCheckIn);
+                if (!string.IsNullOrEmpty(todayAttendance?.LastCheckOut))
+                    checkOutTime = TimeSpan.Parse(todayAttendance.LastCheckOut);
+
+                return new UserStatusResponseDto
+                {
+                    Success = true,
+                    Message = "User status retrieved successfully",
+                    Data = new UserStatusDataDto
+                    {
+                        Status = status,
+                        AttendanceId = todayAttendance?.ID,
+                        CheckInTime = checkInTime,
+                        CheckOutTime = checkOutTime,
+                        DurationMinutes = durationMinutes,
+                        DurationFormatted = durationFormatted,
+                        AttendanceStatus = todayAttendance?.Status.ToString(),
+                        ExpectedCheckInTime = expectedCheckInTime,
+                        ExpectedCheckOutTime = expectedCheckOutTime,
+                        CurrentDate = currentLocalDate.Date
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking user status for user: {UserId}", userId);
+                return new UserStatusResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while checking user status"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets updated user profile data (same as login but without token)
+        /// </summary>
+        public async Task<UserProfileResponseDto> GetUserProfileAsync(int userId)
+        {
+            try
+            {
+                // Get user with all related data
+                var user = await _userManager.Users
+                    .Include(u => u.Branch)
+                        .ThenInclude(b => b.Organization)
+                    .Include(u => u.Department)
+                    .Include(u => u.Timetable)
+                    .Include(u => u.Manager)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User profile retrieval failed: User not found - {UserId}", userId);
+                    return new UserProfileResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
+                // Check if user is a manager
+                var isManager = await _context.Users.AnyAsync(u => u.ManagerID == user.Id);
+
+                // Get user's roles
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // Get available devices for user's branch
+                var branchDevices = await _context.Devices
+                    .Where(d => d.BranchID == user.BranchID && d.IsActive)
+                    .Select(d => new DeviceDataDto
+                    {
+                        Id = d.ID,
+                        DeviceID = d.DeviceID,
+                        DeviceType = d.DeviceType.HasValue
+                            ? d.DeviceType.Value == 'I' ? "In Device"
+                            : d.DeviceType.Value == 'O' ? "Out Device"
+                            : d.DeviceType.Value == 'B' ? "Both (In/Out)"
+                            : "Unknown"
+                            : "Not Set",
+                        Description = d.Description,
+                        IsActive = d.IsActive
+                    })
+                    .ToListAsync();
+
+                // Build user data DTO
+                var userData = new UserDataDto
+                {
+                    Id = user.Id,
+                    DisplayName = user.DisplayName,
+                    Email = user.Email!,
+                    Mobile = user.Mobile,
+                    IsActive = user.IsActive,
+                    VacationBalance = user.VacationBalance,
+                    Address = user.Address,
+                    Gender = user.Gender,
+                    IsManager = isManager,
+                    ManagerId = user.ManagerID,
+                    ManagerName = user.Manager?.DisplayName,
+                    Organization = new OrganizationDataDto
+                    {
+                        Id = user.Branch.Organization.ID,
+                        Name = user.Branch.Organization.Name,
+                        Description = null
+                    },
+                    Branch = new BranchDataDto
+                    {
+                        Id = user.Branch.ID,
+                        Name = user.Branch.Name,
+                        Address = null,
+                        Phone = null,
+                        AvailableDevices = branchDevices
+                    },
+                    Department = new DepartmentDataDto
+                    {
+                        Id = user.Department.ID,
+                        Name = user.Department.Name,
+                        Description = null
+                    },
+                    Timetable = user.Timetable != null ? new TimetableDataDto
+                    {
+                        Id = user.Timetable.ID,
+                        Name = user.Timetable.Name,
+                        CheckInTime = !string.IsNullOrEmpty(user.Timetable.WorkingDayStartingHourMinimum)
+                            ? TimeSpan.Parse(user.Timetable.WorkingDayStartingHourMinimum)
+                            : null,
+                        CheckOutTime = !string.IsNullOrEmpty(user.Timetable.WorkingDayEndingHour)
+                            ? TimeSpan.Parse(user.Timetable.WorkingDayEndingHour)
+                            : null,
+                        GracePeriodMinutes = null
+                    } : null,
+                    Roles = roles.ToList()
+                };
+
+                return new UserProfileResponseDto
+                {
+                    Success = true,
+                    Message = "User profile retrieved successfully",
+                    UserData = userData
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user profile for user: {UserId}", userId);
+                return new UserProfileResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving user profile"
+                };
+            }
+        }
+
+        #endregion
     }
 }

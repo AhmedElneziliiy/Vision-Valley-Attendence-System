@@ -114,6 +114,54 @@
              <response code="400">Invalid request (validation errors)</response>
              <response code="401">User not authorized</response>
         </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.CheckUserStatus">
+             <summary>
+             Check the current attendance status of the authenticated user
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 GET /api/attendance/status
+                 Authorization: Bearer {your-jwt-token}
+            
+             User must be authenticated (requires JWT token in Authorization header)
+            
+             Returns:
+             - Current status: "CheckedIn", "CheckedOut", or "NotCheckedIn"
+             - Today's attendance details (if exists)
+             - Expected check-in/check-out times from timetable
+             - Duration of work if checked out
+             </remarks>
+             <returns>User attendance status for today</returns>
+             <response code="200">Status retrieved successfully</response>
+             <response code="401">User not authorized</response>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.GetUserProfile">
+             <summary>
+             Get the current user profile data (same as login response but without token)
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 GET /api/attendance/profile
+                 Authorization: Bearer {your-jwt-token}
+            
+             User must be authenticated (requires JWT token in Authorization header)
+            
+             Returns the same user data structure as the login endpoint, including:
+             - User information (name, email, mobile, etc.)
+             - Organization details
+             - Branch details with available devices
+             - Department details
+             - Timetable information
+             - User roles
+            
+             This endpoint is useful for refreshing user data without re-authenticating
+             </remarks>
+             <returns>Complete user profile data</returns>
+             <response code="200">Profile retrieved successfully</response>
+             <response code="401">User not authorized</response>
+        </member>
         <member name="T:MvcCoreProject.Controllers.Api.AuthApiController">
             <summary>
             Authentication API Controller for Mobile App Integration
@@ -193,6 +241,21 @@
             <summary>
             Health check endpoint for hardware to verify API is running
             Example: GET /api/device/health
+            </summary>
+        </member>
+        <member name="T:MvcCoreProject.Controllers.Api.FaceApiController">
+            <summary>
+            API controller for mobile app attendance operations (check-in/check-out)
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.FaceApiController.Health">
+            <summary>
+            Health check endpoint
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.FaceApiController.Verify(Microsoft.AspNetCore.Http.IFormFile,Microsoft.AspNetCore.Http.IFormFile,System.Threading.CancellationToken)">
+            <summary>
+            Verify if two faces belong to the same person
             </summary>
         </member>
         <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseWebSocketConfiguration(Microsoft.AspNetCore.Builder.IApplicationBuilder)">

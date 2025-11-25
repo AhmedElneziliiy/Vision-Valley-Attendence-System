@@ -28,6 +28,10 @@
                class="btn btn-success">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
             </a>
+            <a asp-action="ExportReportPdf" asp-route-startDate="@startDate" asp-route-endDate="@endDate" asp-route-userId="@selectedUserId"
+               class="btn btn-danger">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
         </div>
     </div>
 

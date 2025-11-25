@@ -270,5 +270,138 @@ namespace MvcCoreProject.Controllers.Api
 
             return Ok(response);
         }
+
+        /// <summary>
+        /// Check the current attendance status of the authenticated user
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/attendance/status
+        ///     Authorization: Bearer {your-jwt-token}
+        ///
+        /// User must be authenticated (requires JWT token in Authorization header)
+        ///
+        /// Returns:
+        /// - Current status: "CheckedIn", "CheckedOut", or "NotCheckedIn"
+        /// - Today's attendance details (if exists)
+        /// - Expected check-in/check-out times from timetable
+        /// - Duration of work if checked out
+        /// </remarks>
+        /// <returns>User attendance status for today</returns>
+        /// <response code="200">Status retrieved successfully</response>
+        /// <response code="401">User not authorized</response>
+        [HttpGet("status")]
+        [ProducesResponseType(typeof(UserStatusResponseDto), 200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<UserStatusResponseDto>> CheckUserStatus()
+        {
+            try
+            {
+                // Get user ID from JWT token claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    _logger.LogWarning("Failed to extract user ID from JWT token");
+                    return Unauthorized(new UserStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid authentication token"
+                    });
+                }
+
+                _logger.LogInformation("Checking attendance status for user: {UserId}", userId);
+
+                // Delegate to service
+                var response = await _attendanceApiService.CheckUserStatusAsync(userId);
+
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+
+                _logger.LogInformation("Attendance status retrieved for user: {UserId}, Status={Status}",
+                    userId, response.Data?.Status);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking user attendance status");
+                return BadRequest(new UserStatusResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while checking user status"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get the current user profile data (same as login response but without token)
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/attendance/profile
+        ///     Authorization: Bearer {your-jwt-token}
+        ///
+        /// User must be authenticated (requires JWT token in Authorization header)
+        ///
+        /// Returns the same user data structure as the login endpoint, including:
+        /// - User information (name, email, mobile, etc.)
+        /// - Organization details
+        /// - Branch details with available devices
+        /// - Department details
+        /// - Timetable information
+        /// - User roles
+        ///
+        /// This endpoint is useful for refreshing user data without re-authenticating
+        /// </remarks>
+        /// <returns>Complete user profile data</returns>
+        /// <response code="200">Profile retrieved successfully</response>
+        /// <response code="401">User not authorized</response>
+        [HttpGet("profile")]
+        [ProducesResponseType(typeof(UserProfileResponseDto), 200)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<UserProfileResponseDto>> GetUserProfile()
+        {
+            try
+            {
+                // Get user ID from JWT token claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    _logger.LogWarning("Failed to extract user ID from JWT token");
+                    return Unauthorized(new UserProfileResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid authentication token"
+                    });
+                }
+
+                _logger.LogInformation("Retrieving profile for user: {UserId}", userId);
+
+                // Delegate to service
+                var response = await _attendanceApiService.GetUserProfileAsync(userId);
+
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+
+                _logger.LogInformation("Profile retrieved successfully for user: {UserId}", userId);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user profile");
+                return BadRequest(new UserProfileResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving user profile"
+                });
+            }
+        }
     }
 }

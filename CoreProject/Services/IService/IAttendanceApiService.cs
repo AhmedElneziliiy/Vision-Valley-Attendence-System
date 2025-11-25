@@ -36,5 +36,21 @@ namespace CoreProject.Services.IService
         /// <param name="request">Passthrough request containing username, UDID, and device ID</param>
         /// <returns>Passthrough response with access granted/denied status</returns>
         Task<PassthroughResponseDto> ProcessPassthroughAsync(PassthroughRequestDto request);
+
+        /// <summary>
+        /// Checks the current attendance status of the authenticated user
+        /// Returns if user is checked in, checked out, or hasn't checked in yet for today
+        /// </summary>
+        /// <param name="userId">User ID from JWT token</param>
+        /// <returns>User status response with current attendance state</returns>
+        Task<UserStatusResponseDto> CheckUserStatusAsync(int userId);
+
+        /// <summary>
+        /// Gets the current user profile data (same as login but without token)
+        /// Returns updated user information including organization, branch, department, and timetable
+        /// </summary>
+        /// <param name="userId">User ID from JWT token</param>
+        /// <returns>User profile response with complete user data</returns>
+        Task<UserProfileResponseDto> GetUserProfileAsync(int userId);
     }
 }

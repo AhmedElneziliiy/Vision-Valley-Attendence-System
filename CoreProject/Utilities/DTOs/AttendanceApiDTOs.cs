@@ -286,5 +286,81 @@ namespace CoreProject.Utilities.DTOs
         public TimeSpan? ExpectedCheckOutTime { get; set; }
     }
 
+    /// <summary>
+    /// Response model for user status check
+    /// </summary>
+    public class UserStatusResponseDto
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public UserStatusDataDto? Data { get; set; }
+    }
+
+    /// <summary>
+    /// User attendance status data
+    /// </summary>
+    public class UserStatusDataDto
+    {
+        /// <summary>
+        /// Current attendance status: "CheckedIn", "CheckedOut", "NotCheckedIn"
+        /// </summary>
+        public string Status { get; set; } = null!;
+
+        /// <summary>
+        /// Today's attendance record ID (if exists)
+        /// </summary>
+        public int? AttendanceId { get; set; }
+
+        /// <summary>
+        /// Check-in time for today (if checked in)
+        /// </summary>
+        public TimeSpan? CheckInTime { get; set; }
+
+        /// <summary>
+        /// Check-out time for today (if checked out)
+        /// </summary>
+        public TimeSpan? CheckOutTime { get; set; }
+
+        /// <summary>
+        /// Duration of work in minutes (if checked out)
+        /// </summary>
+        public int? DurationMinutes { get; set; }
+
+        /// <summary>
+        /// Duration formatted as HH:mm (if checked out)
+        /// </summary>
+        public string? DurationFormatted { get; set; }
+
+        /// <summary>
+        /// Attendance status (On Time, Late, etc.)
+        /// </summary>
+        public string? AttendanceStatus { get; set; }
+
+        /// <summary>
+        /// Expected check-in time from timetable
+        /// </summary>
+        public TimeSpan? ExpectedCheckInTime { get; set; }
+
+        /// <summary>
+        /// Expected check-out time from timetable
+        /// </summary>
+        public TimeSpan? ExpectedCheckOutTime { get; set; }
+
+        /// <summary>
+        /// Current date in user's timezone
+        /// </summary>
+        public DateTime CurrentDate { get; set; }
+    }
+
+    /// <summary>
+    /// Response model for user profile
+    /// </summary>
+    public class UserProfileResponseDto
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public UserDataDto? UserData { get; set; }
+    }
+
     #endregion
 }
