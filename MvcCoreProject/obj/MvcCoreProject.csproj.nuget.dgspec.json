@@ -1,7 +1,7 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\MvcCoreProject.csproj": {}
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\MvcCoreProject.csproj": {}
   },
   "projects": {
     "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj": {
@@ -117,14 +117,14 @@
         }
       }
     },
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\MvcCoreProject.csproj": {
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\MvcCoreProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\MvcCoreProject.csproj",
+        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\MvcCoreProject.csproj",
         "projectName": "MvcCoreProject",
-        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\MvcCoreProject.csproj",
+        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\MvcCoreProject.csproj",
         "packagesPath": "C:\\Users\\Kareem Usama\\.nuget\\packages\\",
-        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\obj\\",
+        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -171,7 +171,7 @@
           "dependencies": {
             "FaceRecognition.Core": {
               "target": "Package",
-              "version": "[1.0.0, )"
+              "version": "[1.1.0, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "H7JkXTsNJuo=",
+  "dgSpecHash": "33ihkRxqweE=",
   "success": true,
-  "projectFilePath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj",
+  "projectFilePath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

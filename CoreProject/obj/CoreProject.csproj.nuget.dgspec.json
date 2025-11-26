@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj": {}
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj": {}
   },
   "projects": {
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj": {
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj",
+        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj",
         "projectName": "CoreProject",
-        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj",
+        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj",
         "packagesPath": "C:\\Users\\Kareem Usama\\.nuget\\packages\\",
-        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\obj\\",
+        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

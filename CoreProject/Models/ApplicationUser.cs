@@ -22,6 +22,23 @@ namespace CoreProject.Models
         /// </summary>
         public string? UDID { get; set; }
 
+        /// <summary>
+        /// Enable/disable face verification for this specific user
+        /// Both branch and user flags must be true for face verification to be required
+        /// </summary>
+        public bool IsFaceVerificationEnabled { get; set; } = false;
+
+        /// <summary>
+        /// Face embedding (512 floats = 2048 bytes) for face recognition
+        /// Stored as byte array for efficient storage
+        /// </summary>
+        public byte[]? FaceEmbedding { get; set; }
+
+        /// <summary>
+        /// Timestamp when face was enrolled for this user
+        /// </summary>
+        public DateTime? FaceEnrolledAt { get; set; }
+
         // Hierarchy
         public int? ManagerID { get; set; }
         public ApplicationUser? Manager { get; set; }

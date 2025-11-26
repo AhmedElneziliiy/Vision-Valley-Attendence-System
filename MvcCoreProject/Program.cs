@@ -33,12 +33,12 @@ builder.Services.AddSwaggerConfiguration();
 // CORS
 builder.Services.AddCorsConfiguration();
 
-// ============================================
-// APPLICATION PIPELINE
-// ============================================
 builder.Services.Configure<FaceRecognitionOptions>(
     builder.Configuration.GetSection("FaceRecognition"));
 builder.Services.AddFaceRecognition();
+// ============================================
+// APPLICATION PIPELINE
+// ============================================
 
 var app = builder.Build();
 

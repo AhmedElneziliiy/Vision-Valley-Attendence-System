@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "0zbaagBsUcA=",
+  "dgSpecHash": "HO9pEKVTcVk=",
   "success": true,
-  "projectFilePath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\mvccoreproject\\MvcCoreProject.csproj",
+  "projectFilePath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\MvcCoreProject\\MvcCoreProject.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
-    "C:\\Users\\Kareem Usama\\.nuget\\packages\\facerecognition.core\\1.0.0\\facerecognition.core.1.0.0.nupkg.sha512",
+    "C:\\Users\\Kareem Usama\\.nuget\\packages\\facerecognition.core\\1.1.0\\facerecognition.core.1.1.0.nupkg.sha512",
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.21\\microsoft.aspnetcore.authentication.jwtbearer.8.0.21.nupkg.sha512",
     "C:\\Users\\Kareem Usama\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\8.0.21\\microsoft.aspnetcore.cryptography.internal.8.0.21.nupkg.sha512",

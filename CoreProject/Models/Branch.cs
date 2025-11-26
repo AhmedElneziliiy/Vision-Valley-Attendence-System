@@ -18,6 +18,12 @@ namespace CoreProject.Models
         public string? NationalHolidays { get; set; }
         public bool IsMainBranch { get; set; } = false;
         public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Enable/disable face verification for all users in this branch
+        /// </summary>
+        public bool IsFaceVerificationEnabled { get; set; } = false;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 

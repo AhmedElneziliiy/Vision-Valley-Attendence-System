@@ -243,6 +243,21 @@
             Example: GET /api/device/health
             </summary>
         </member>
+        <member name="T:MvcCoreProject.Controllers.Api.FaceApiController">
+            <summary>
+            API controller for mobile app attendance operations (check-in/check-out)
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.FaceApiController.Health">
+            <summary>
+            Health check endpoint
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.FaceApiController.Verify(Microsoft.AspNetCore.Http.IFormFile,Microsoft.AspNetCore.Http.IFormFile,System.Threading.CancellationToken)">
+            <summary>
+            Verify if two faces belong to the same person
+            </summary>
+        </member>
         <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseWebSocketConfiguration(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary>
             Configure WebSocket support for ESP32 lamp connections
