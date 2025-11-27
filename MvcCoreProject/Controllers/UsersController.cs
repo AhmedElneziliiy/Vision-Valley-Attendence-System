@@ -14,15 +14,18 @@ namespace MvcCoreProject.Controllers
         private readonly IUserService _userService;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UsersController> _logger;
+        private readonly IFaceEnrollmentService _faceEnrollmentService;
 
         public UsersController(
             IUserService userService,
             ApplicationDbContext context,
-            ILogger<UsersController> logger)
+            ILogger<UsersController> logger,
+            IFaceEnrollmentService faceEnrollmentService)
         {
             _userService = userService;
             _context = context;
             _logger = logger;
+            _faceEnrollmentService = faceEnrollmentService;
         }
 
         [HttpGet]
@@ -256,7 +259,44 @@ namespace MvcCoreProject.Controllers
                     var result = await _userService.UpdateUserAsync(model);
                     if (result)
                     {
-                        TempData["Success"] = $"User '{model.DisplayName}' updated successfully!";
+                        var successMessage = $"User '{model.DisplayName}' updated successfully!";
+
+                        // Handle face photo enrollment if provided
+                        var facePhoto = Request.Form.Files["facePhoto"];
+                        if (facePhoto != null && facePhoto.Length > 0)
+                        {
+                            _logger.LogInformation("Processing face photo for user {UserId}", model.Id);
+
+                            try
+                            {
+                                // Convert IFormFile to byte array
+                                using var memoryStream = new System.IO.MemoryStream();
+                                await facePhoto.CopyToAsync(memoryStream);
+                                var photoBytes = memoryStream.ToArray();
+
+                                // Call face enrollment service
+                                var enrollmentResult = await _faceEnrollmentService.EnrollUserFaceAsync(model.Id, photoBytes);
+
+                                if (enrollmentResult.Success)
+                                {
+                                    successMessage += " Face enrolled successfully.";
+                                    _logger.LogInformation("Face enrolled successfully for user {UserId}", model.Id);
+                                }
+                                else
+                                {
+                                    successMessage += $" However, face enrollment failed: {enrollmentResult.ErrorMessage}";
+                                    _logger.LogWarning("Face enrollment failed for user {UserId}: {Error}",
+                                        model.Id, enrollmentResult.ErrorMessage);
+                                }
+                            }
+                            catch (Exception faceEx)
+                            {
+                                successMessage += $" However, an error occurred during face enrollment: {faceEx.Message}";
+                                _logger.LogError(faceEx, "Exception during face enrollment for user {UserId}", model.Id);
+                            }
+                        }
+
+                        TempData["Success"] = successMessage;
                         return RedirectToAction(nameof(Index));
                     }
 
@@ -280,6 +320,7 @@ namespace MvcCoreProject.Controllers
                 reloadedModel.Gender = model.Gender;
                 reloadedModel.VacationBalance = model.VacationBalance;
                 reloadedModel.IsActive = model.IsActive;
+                reloadedModel.IsFaceVerificationEnabled = model.IsFaceVerificationEnabled;
                 return View(reloadedModel);
             }
 

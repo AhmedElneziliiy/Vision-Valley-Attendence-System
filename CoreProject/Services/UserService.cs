@@ -23,19 +23,22 @@ namespace CoreProject.Services
         private readonly IRepository<Branch> _branchRepo;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<UserService> _logger;
+        private readonly IFaceEnrollmentService _faceEnrollmentService;
 
         public UserService(
             IUserRepository userRepo,
             IRepository<Branch> branchRepo,
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext context,
-            ILogger<UserService> logger)
+            ILogger<UserService> logger,
+            IFaceEnrollmentService faceEnrollmentService)
         {
             _userRepo = userRepo;
             _branchRepo = branchRepo;
             _userManager = userManager;
             _context = context;
             _logger = logger;
+            _faceEnrollmentService = faceEnrollmentService;
         }
 
         public async Task<IEnumerable<UserViewModel>> GetFilteredUsersAsync(
@@ -357,6 +360,10 @@ namespace CoreProject.Services
                     IsActive = user.IsActive,
                     CurrentPhotoUrl = user.Image?.ImageUrl,
 
+                    // Face Verification
+                    IsFaceVerificationEnabled = user.IsFaceVerificationEnabled,
+                    FaceEnrolledAt = user.FaceEnrolledAt,
+
                     Branches = branches.Select(b => new SelectListItem
                     {
                         Value = b.ID.ToString(),
@@ -430,6 +437,7 @@ namespace CoreProject.Services
                 user.TimetableID = model.TimetableId;
                 user.ManagerID = model.ManagerId;
                 user.IsActive = model.IsActive;
+                user.IsFaceVerificationEnabled = model.IsFaceVerificationEnabled;
                 user.UpdatedAt = DateTime.UtcNow;
 
                 // Handle profile photo upload

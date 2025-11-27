@@ -117,6 +117,22 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <div class="form-check form-switch" style="padding-left: 3rem; padding-top: 0.5rem;">
+                                    <input asp-for="IsFaceVerificationEnabled" class="form-check-input" type="checkbox"
+                                           role="switch" id="faceVerificationSwitch" style="width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2" for="faceVerificationSwitch">
+                                        <i class="bi bi-person-bounding-box me-1"></i>
+                                        Enable Face Verification for this Branch
+                                    </label>
+                                </div>
+                                <small class="text-muted">When enabled, users in this branch can be required to verify their face during check-in/check-out</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

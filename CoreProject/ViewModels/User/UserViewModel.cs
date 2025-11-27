@@ -19,6 +19,10 @@ namespace CoreProject.ViewModels
         public DateTime CreatedAt { get; set; }
         public int? VacationBalance { get; set; }
 
+        // Face Verification
+        public bool IsFaceVerificationEnabled { get; set; }
+        public DateTime? FaceEnrolledAt { get; set; }
+
         // Computed Properties
         public string RoleBadgeClass => GetRoleBadgeClass();
         public string PrimaryRole => Roles.FirstOrDefault() ?? "No Role";

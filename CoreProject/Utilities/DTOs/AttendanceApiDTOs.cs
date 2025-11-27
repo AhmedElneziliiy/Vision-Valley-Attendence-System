@@ -53,6 +53,11 @@ namespace CoreProject.Utilities.DTOs
         [Required(ErrorMessage = "ActionType is required")]
         [RegularExpression("^(CheckIn|CheckOut)$", ErrorMessage = "ActionType must be either 'CheckIn' or 'CheckOut'")]
         public string ActionType { get; set; } = null!;
+
+        /// <summary>
+        /// Base64 encoded face image for face verification (optional, required if face verification is enabled)
+        /// </summary>
+        public string? FaceImage { get; set; }
     }
 
     /// <summary>
@@ -140,6 +145,11 @@ namespace CoreProject.Utilities.DTOs
         /// Attendance data if operation was successful
         /// </summary>
         public AttendanceDataDto? Data { get; set; }
+
+        /// <summary>
+        /// Face verification similarity percentage (0-100). Null if face verification was not performed.
+        /// </summary>
+        public double? FaceSimilarity { get; set; }
     }
 
     /// <summary>

@@ -151,6 +151,7 @@ namespace MvcCoreProject.Extensions
             services.AddScoped<IDeviceService, DeviceService>();
             services.AddScoped<ITimezoneService, TimezoneService>();
             services.AddScoped<ILampService, LampService>();
+            services.AddScoped<IFaceEnrollmentService, FaceEnrollmentService>();
 
             return services;
         }

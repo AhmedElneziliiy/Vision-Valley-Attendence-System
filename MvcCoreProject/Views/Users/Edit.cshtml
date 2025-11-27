@@ -259,6 +259,81 @@
                 </div>
             </div>
 
+            <!-- Face Verification -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="bi bi-person-bounding-box"></i>
+                    <h5>Face Verification</h5>
+                </div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Face Verification Status</label>
+                                <div class="form-check form-switch" style="padding-left: 3rem; padding-top: 0.5rem;">
+                                    <input asp-for="IsFaceVerificationEnabled" class="form-check-input" type="checkbox"
+                                           role="switch" id="faceVerificationSwitch" style="width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2" for="faceVerificationSwitch">
+                                        <span id="faceVerificationLabel">@(Model.IsFaceVerificationEnabled ? "Enabled" : "Disabled")</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">Require face verification for check-in/check-out</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">Enrollment Status</label>
+                                <div id="enrollmentStatusSuccess" class="alert alert-success mb-0 py-2" style="font-size: 0.875rem; @(Model.HasFaceEnrollment ? "" : "display: none;")">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    <span id="enrollmentDate">Face enrolled on @(Model.FaceEnrolledAt.HasValue ? Model.FaceEnrolledAt.Value.ToString("MMM dd, yyyy HH:mm") : "")</span>
+                                </div>
+                                <div id="enrollmentStatusWarning" class="alert alert-warning mb-0 py-2" style="font-size: 0.875rem; @(Model.HasFaceEnrollment ? "display: none;" : "")">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    No face enrolled yet
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-camera-fill me-2"></i>Face Photo for Enrollment
+                                </label>
+                                <div class="input-with-icon">
+                                    <i class="bi bi-image"></i>
+                                    <input type="file" name="facePhoto" id="facePhoto" class="form-control"
+                                           accept="image/jpeg,image/jpg,image/png" onchange="previewFacePhoto(this)" />
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Upload a clear frontal face photo for enrollment. Only one face should be visible. (JPG, PNG - Max 5MB)
+                                </small>
+                                <div id="facePhotoPreview" class="mt-3" style="display: none;">
+                                    <p class="text-muted mb-2"><small>Face Photo Preview:</small></p>
+                                    <img id="facePhotoPreviewImg" src="" alt="Face Photo Preview" class="rounded"
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover; border: 2px solid #667eea;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div id="faceVerificationWarning" class="alert alert-info" style="@(Model.IsFaceVerificationEnabled && !Model.HasFaceEnrollment ? "" : "display: none;")">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <strong>Note:</strong> Face verification is enabled but no face is enrolled.
+                                The user will not be able to check-in/check-out until a face photo is enrolled.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Form Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn-submit">
@@ -331,10 +406,44 @@
             document.getElementById('activeLabel').textContent = this.checked ? 'Active' : 'Inactive';
         });
 
+        // Update face verification label and warning when checkbox changes
+        document.getElementById('faceVerificationSwitch').addEventListener('change', function() {
+            document.getElementById('faceVerificationLabel').textContent = this.checked ? 'Enabled' : 'Disabled';
+
+            // Show/hide warning based on face verification status and enrollment
+            const hasEnrollment = @(Model.HasFaceEnrollment ? "true" : "false");
+            const warning = document.getElementById('faceVerificationWarning');
+
+            if (this.checked && !hasEnrollment) {
+                warning.style.display = '';
+            } else {
+                warning.style.display = 'none';
+            }
+        });
+
         // Photo preview function
         function previewPhoto(input) {
             const preview = document.getElementById('photoPreview');
             const previewImg = document.getElementById('photoPreviewImg');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // Face photo preview function
+        function previewFacePhoto(input) {
+            const preview = document.getElementById('facePhotoPreview');
+            const previewImg = document.getElementById('facePhotoPreviewImg');
 
             if (input.files && input.files[0]) {
                 const reader = new FileReader();

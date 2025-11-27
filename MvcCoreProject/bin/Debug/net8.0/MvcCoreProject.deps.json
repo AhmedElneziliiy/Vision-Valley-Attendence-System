@@ -1336,6 +1336,7 @@
       },
       "CoreProject/1.0.0": {
         "dependencies": {
+          "FaceRecognition.Core": "1.1.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.21",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.21",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.21",

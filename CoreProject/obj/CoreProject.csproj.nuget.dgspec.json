@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj": {}
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj": {}
   },
   "projects": {
-    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj": {
+    "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj",
+        "projectUniqueName": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj",
         "projectName": "CoreProject",
-        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\CoreProject.csproj",
+        "projectPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\CoreProject.csproj",
         "packagesPath": "C:\\Users\\Kareem Usama\\.nuget\\packages\\",
-        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\coreproject\\obj\\",
+        "outputPath": "C:\\Vision Valley Attendence Back-End\\Vision Valley Attendence\\CoreProject\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -52,6 +52,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "FaceRecognition.Core": {
+              "target": "Package",
+              "version": "[1.1.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.21, )"
@@ -94,20 +98,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.22, 8.0.22]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.22, 8.0.22]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.22, 8.0.22]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"

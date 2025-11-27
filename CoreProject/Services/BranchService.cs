@@ -315,6 +315,7 @@ namespace CoreProject.Services
                     NationalHolidays = branch.NationalHolidays,
                     IsMainBranch = branch.IsMainBranch,
                     IsActive = branch.IsActive,
+                    IsFaceVerificationEnabled = branch.IsFaceVerificationEnabled,
 
                     Organizations = organizations.Select(o => new SelectListItem
                     {
@@ -352,6 +353,10 @@ namespace CoreProject.Services
                     return false;
                 }
 
+                // Check if face verification setting changed
+                bool faceVerificationChanged = branch.IsFaceVerificationEnabled != model.IsFaceVerificationEnabled;
+                bool faceVerificationEnabled = model.IsFaceVerificationEnabled;
+
                 branch.Name = model.Name;
                 branch.OrganizationID = model.OrganizationId;
                 branch.TimeZone = model.TimeZone;
@@ -359,10 +364,50 @@ namespace CoreProject.Services
                 branch.NationalHolidays = model.NationalHolidays;
                 branch.IsMainBranch = model.IsMainBranch;
                 branch.IsActive = model.IsActive;
+                branch.IsFaceVerificationEnabled = model.IsFaceVerificationEnabled;
                 branch.UpdatedAt = DateTime.UtcNow;
 
                 _branchRepo.Update(branch);
                 await _context.SaveChangesAsync();
+
+                // If face verification setting changed, update all users in the branch
+                if (faceVerificationChanged)
+                {
+                    var usersInBranch = await _context.Users
+                        .Where(u => u.BranchID == model.Id)
+                        .ToListAsync();
+
+                    if (faceVerificationEnabled)
+                    {
+                        // Enable face verification for all users in the branch
+                        _logger.LogInformation("Face verification enabled for branch {BranchId}. Enabling for all users in this branch.", model.Id);
+
+                        foreach (var user in usersInBranch)
+                        {
+                            user.IsFaceVerificationEnabled = true;
+                            user.UpdatedAt = DateTime.UtcNow;
+                        }
+
+                        _logger.LogInformation("Face verification enabled for {Count} users in branch {BranchId}",
+                            usersInBranch.Count, model.Id);
+                    }
+                    else
+                    {
+                        // Disable face verification for all users in the branch
+                        _logger.LogInformation("Face verification disabled for branch {BranchId}. Disabling for all users in this branch.", model.Id);
+
+                        foreach (var user in usersInBranch)
+                        {
+                            user.IsFaceVerificationEnabled = false;
+                            user.UpdatedAt = DateTime.UtcNow;
+                        }
+
+                        _logger.LogInformation("Face verification disabled for {Count} users in branch {BranchId}",
+                            usersInBranch.Count, model.Id);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
 
                 _logger.LogInformation("Branch updated successfully: {BranchId}", model.Id);
                 return true;

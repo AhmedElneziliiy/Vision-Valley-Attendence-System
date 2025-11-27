@@ -25,6 +25,8 @@ namespace CoreProject.ViewModels
 
         public bool IsActive { get; set; }
 
+        public bool IsFaceVerificationEnabled { get; set; }
+
         // Dropdown lists
         public IEnumerable<SelectListItem> Organizations { get; set; } = Enumerable.Empty<SelectListItem>();
         public IEnumerable<SelectListItem> TimeZones { get; set; } = Enumerable.Empty<SelectListItem>();

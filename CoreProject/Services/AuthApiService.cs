@@ -192,7 +192,11 @@ namespace CoreProject.Services
                                 : null,
                             GracePeriodMinutes = null
                         } : null,
-                        Roles = roles.ToList()
+                        Roles = roles.ToList(),
+
+                        // Face Verification flags
+                        IsFaceVerificationRequired = user.Branch.IsFaceVerificationEnabled && user.IsFaceVerificationEnabled,
+                        HasFaceEnrollment = user.FaceEmbedding != null && user.FaceEmbedding.Length > 0
                     }
                 };
 

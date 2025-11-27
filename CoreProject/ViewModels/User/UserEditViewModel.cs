@@ -41,6 +41,11 @@ namespace CoreProject.ViewModels
 
         public bool IsActive { get; set; }
 
+        // Face Verification
+        public bool IsFaceVerificationEnabled { get; set; }
+        public DateTime? FaceEnrolledAt { get; set; }
+        public bool HasFaceEnrollment => FaceEnrolledAt.HasValue;
+
         // Password fields - optional for edit
         [MinLength(6)]
         public string? NewPassword { get; set; }

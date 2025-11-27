@@ -110,6 +110,10 @@ namespace CoreProject.Utilities.DTOs
 
         // Roles
         public List<string> Roles { get; set; } = new List<string>();
+
+        // Face Verification
+        public bool IsFaceVerificationRequired { get; set; }
+        public bool HasFaceEnrollment { get; set; }
     }
 
     public class OrganizationDataDto

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Verification API Tester</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        #imagePreview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Face Verification API Tester</h1>
+
+        <!-- Configuration -->
+        <div class="section">
+            <h2>Configuration</h2>
+            <label>API Base URL:</label>
+            <input type="text" id="baseUrl" value="https://localhost:7095" placeholder="https://localhost:7095">
+        </div>
+
+        <!-- Step 1: Login -->
+        <div class="section">
+            <h2>Step 1: Login</h2>
+            <label>Email:</label>
+            <input type="text" id="email" value="user@example.com" placeholder="user@example.com">
+
+            <label>Password:</label>
+            <input type="password" id="password" value="Password123!" placeholder="Password123!">
+
+            <label>UDID (Device ID):</label>
+            <input type="text" id="udid" value="TEST-DEVICE-12345" placeholder="TEST-DEVICE-12345">
+
+            <button onclick="testLogin()">🔑 Login</button>
+
+            <div id="loginResult"></div>
+        </div>
+
+        <!-- Step 2: Upload Face Image -->
+        <div class="section">
+            <h2>Step 2: Upload Face Image (for enrollment)</h2>
+            <label>Select Face Photo (JPG/PNG):</label>
+            <input type="file" id="faceImage" accept="image/jpeg,image/jpg,image/png" onchange="previewImage()">
+            <img id="imagePreview" alt="Preview">
+
+            <div id="imageInfo" class="result info" style="display: none;"></div>
+        </div>
+
+        <!-- Step 3: Test Attendance -->
+        <div class="section">
+            <h2>Step 3: Test Attendance</h2>
+            <label>Device ID:</label>
+            <input type="text" id="deviceId" value="DEVICE-001" placeholder="DEVICE-001">
+
+            <label>Action Type:</label>
+            <select id="actionType" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="CheckIn">Check In</option>
+                <option value="CheckOut">Check Out</option>
+            </select>
+
+            <button onclick="testAttendanceWithoutFace()">📝 Test WITHOUT Face</button>
+            <button onclick="testAttendanceWithFace()">📸 Test WITH Face</button>
+
+            <div id="attendanceResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let base64Image = null;
+        let userData = null;
+
+        function previewImage() {
+            const file = document.getElementById('faceImage').files[0];
+            const preview = document.getElementById('imagePreview');
+            const info = document.getElementById('imageInfo');
+
+            if (file) {
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                // Convert to base64 (without data URI prefix)
+                const reader2 = new FileReader();
+                reader2.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    base64Image = dataUrl.split(',')[1]; // Remove "data:image/jpeg;base64," prefix
+
+                    info.style.display = 'block';
+                    info.innerHTML = `✓ Image loaded\n` +
+                                   `  - Size: ${(file.size / 1024).toFixed(2)} KB\n` +
+                                   `  - Base64 length: ${base64Image.length} characters`;
+                };
+                reader2.readAsDataURL(file);
+            }
+        }
+
+        async function testLogin() {
+            const baseUrl = document.getElementById('baseUrl').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const udid = document.getElementById('udid').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            resultDiv.innerHTML = '<div class="result info">⏳ Logging in...</div>';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, udid })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.token;
+                    userData = data.userData;
+
+                    resultDiv.innerHTML = `<div class="result success">✓ Login Successful\n\n` +
+                        `User: ${userData.displayName}\n` +
+                        `Email: ${userData.email}\n` +
+                        `Face Verification Required: ${userData.isFaceVerificationRequired}\n` +
+                        `Has Face Enrollment: ${userData.hasFaceEnrollment}\n` +
+                        `Token: ${authToken.substring(0, 50)}...</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">✗ Login Failed\n\n${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">✗ Error\n\n${error.message}</div>`;
+            }
+        }
+
+        async function testAttendanceWithoutFace() {
+            if (!authToken) {
+                alert('Please login first!');
+                return;
+            }
+
+            const baseUrl = document.getElementById('baseUrl').value;
+            const email = document.getElementById('email').value;
+            const udid = document.getElementById('udid').value;
+            const deviceId = document.getElementById('deviceId').value;
+            const actionType = document.getElementById('actionType').value;
+            const resultDiv = document.getElementById('attendanceResult');
+
+            resultDiv.innerHTML = '<div class="result info">⏳ Testing attendance without face...</div>';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/attendance/action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        username: email,
+                        udid: udid,
+                        deviceID: deviceId,
+                        actionType: actionType,
+                        faceImage: null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✓ Attendance Recorded (No Face Required)\n\n${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">✗ Failed\n\n${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">✗ Error\n\n${error.message}</div>`;
+            }
+        }
+
+        async function testAttendanceWithFace() {
+            if (!authToken) {
+                alert('Please login first!');
+                return;
+            }
+
+            if (!base64Image) {
+                alert('Please upload a face image first!');
+                return;
+            }
+
+            const baseUrl = document.getElementById('baseUrl').value;
+            const email = document.getElementById('email').value;
+            const udid = document.getElementById('udid').value;
+            const deviceId = document.getElementById('deviceId').value;
+            const actionType = document.getElementById('actionType').value;
+            const resultDiv = document.getElementById('attendanceResult');
+
+            resultDiv.innerHTML = '<div class="result info">⏳ Testing attendance with face verification...</div>';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/attendance/action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        username: email,
+                        udid: udid,
+                        deviceID: deviceId,
+                        actionType: actionType,
+                        faceImage: base64Image
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✓ Attendance Recorded (Face Verified)\n\n${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">✗ Face Verification Failed\n\n${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">✗ Error\n\n${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
