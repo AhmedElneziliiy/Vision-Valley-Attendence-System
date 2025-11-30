@@ -403,5 +403,163 @@ namespace MvcCoreProject.Controllers.Api
                 });
             }
         }
+
+        /// <summary>
+        /// Verify user's face against their enrolled photo
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/attendance/verify-face
+        ///     Authorization: Bearer {your-jwt-token}
+        ///     {
+        ///         "faceImage": "base64-encoded-image-string"
+        ///     }
+        ///
+        /// User must be authenticated (requires JWT token in Authorization header)
+        /// User ID is extracted from the JWT token automatically
+        ///
+        /// The endpoint:
+        /// - Verifies the submitted face image against the user's enrolled face photo in the database
+        /// - Returns whether the face is verified (similarity >= 85%)
+        /// - Returns the similarity percentage
+        ///
+        /// Returns:
+        /// - IsVerified: true if similarity >= 85%, false otherwise
+        /// - Similarity: percentage match (0-100)
+        /// - User information
+        /// </remarks>
+        /// <param name="request">Face verification request with base64 encoded image</param>
+        /// <returns>Face verification response with verification result and similarity</returns>
+        /// <response code="200">Verification processed successfully</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">User not authorized</response>
+        [HttpPost("verify-face")]
+        [ProducesResponseType(typeof(VerifyFaceResponseDto), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<VerifyFaceResponseDto>> VerifyFace([FromBody] VerifyFaceRequestDto request)
+        {
+            try
+            {
+                // Validate model
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Invalid verify face request: {Errors}",
+                        string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+
+                    return BadRequest(new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid request. Please check your input."
+                    });
+                }
+
+                // Get user ID from JWT token claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    _logger.LogWarning("Failed to extract user ID from JWT token");
+                    return Unauthorized(new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid authentication token"
+                    });
+                }
+
+                _logger.LogInformation("Verifying face for user: {UserId}", userId);
+
+                // Delegate to service
+                var response = await _attendanceApiService.VerifyUserFaceAsync(userId, request);
+
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+
+                _logger.LogInformation("Face verification completed for user: {UserId}, IsVerified={IsVerified}, Similarity={Similarity}",
+                    userId, response.Data?.IsVerified, response.Data?.Similarity);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error verifying face");
+                return BadRequest(new VerifyFaceResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while verifying face"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Get action status for the authenticated user (face verification requirements)
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/attendance/action-status
+        ///     Authorization: Bearer {your-jwt-token}
+        ///
+        /// User must be authenticated (requires JWT token in Authorization header)
+        /// User ID is extracted from the JWT token automatically
+        ///
+        /// Returns:
+        /// - isFaceVerificationRequired: true if face verification is required for this user
+        /// - hasFaceEnrollment: true if user has enrolled their face photo
+        ///
+        /// Face verification is required when both:
+        /// - The branch has face verification enabled
+        /// - The user has face verification enabled
+        /// </remarks>
+        /// <returns>Action status with face verification settings</returns>
+        /// <response code="200">Status retrieved successfully</response>
+        /// <response code="400">Invalid request</response>
+        /// <response code="401">User not authorized</response>
+        [HttpGet("action-status")]
+        [ProducesResponseType(typeof(ActionStatusResponseDto), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<ActionResult<ActionStatusResponseDto>> GetActionStatus()
+        {
+            try
+            {
+                // Get user ID from JWT token claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    _logger.LogWarning("Failed to extract user ID from JWT token");
+                    return Unauthorized(new ActionStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid authentication token"
+                    });
+                }
+
+                _logger.LogInformation("Getting action status for user: {UserId}", userId);
+
+                // Delegate to service
+                var response = await _attendanceApiService.GetActionStatusAsync(userId);
+
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+
+                _logger.LogInformation("Action status retrieved for user: {UserId}", userId);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting action status");
+                return BadRequest(new ActionStatusResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while getting action status"
+                });
+            }
+        }
     }
 }

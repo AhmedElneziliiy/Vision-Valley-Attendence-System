@@ -110,7 +110,8 @@ namespace CoreProject.Services
                 lamp.DeviceID, lamp.Branch.Name, branchLocalTime.ToString("HH:mm:ss"));
 
             // Determine if lamp should be ON based on timetable (with grace periods)
-            bool shouldBeOn = lamp.ShouldBeOn(branchLocalTime, graceHoursBefore: 1, graceHoursAfter: 1);
+            // UPDATED: Pass context to check for active access requests
+            bool shouldBeOn = lamp.ShouldBeOn(branchLocalTime, graceHoursBefore: 1, graceHoursAfter: 1, context: context);
 
             _logger.LogDebug("Lamp {DeviceID}: Current state={CurrentState}, Should be={ShouldBe}",
                 lamp.DeviceID,

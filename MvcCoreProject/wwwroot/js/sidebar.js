@@ -10,8 +10,17 @@ function initializeSidebar() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 
-    // Toggle sidebar on mobile
+    // Toggle sidebar with mobile menu button
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+
+    // Toggle sidebar on mobile (inside sidebar button)
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function (e) {
             e.stopPropagation();

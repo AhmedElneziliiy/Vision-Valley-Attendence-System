@@ -5,6 +5,7 @@ using CoreProject.Utilities.DTOs;
 using FaceRecognition.Core.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace CoreProject.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITimezoneService _timezoneService;
         private readonly IFaceVerificationService _faceVerificationService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<AttendanceApiService> _logger;
 
         public AttendanceApiService(
@@ -31,12 +33,14 @@ namespace CoreProject.Services
             UserManager<ApplicationUser> userManager,
             ITimezoneService timezoneService,
             IFaceVerificationService faceVerificationService,
+            IConfiguration configuration,
             ILogger<AttendanceApiService> logger)
         {
             _context = context;
             _userManager = userManager;
             _timezoneService = timezoneService;
             _faceVerificationService = faceVerificationService;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -44,8 +48,6 @@ namespace CoreProject.Services
         {
             try
             {
-                double? faceSimilarity = null; // Track face verification similarity
-
                 // 1. Find user by email with all related data
                 var user = await _userManager.Users
                     .Include(u => u.Branch)
@@ -87,131 +89,7 @@ namespace CoreProject.Services
                     };
                 }
 
-                // 4. Face Verification (if enabled for both branch AND user)
-                if (user.Branch != null && user.Branch.IsFaceVerificationEnabled && user.IsFaceVerificationEnabled)
-                {
-                    _logger.LogInformation("Face verification required for user {Email}", request.Username);
-
-                    // Check if user has enrolled face
-                    if (user.FaceEmbedding == null || user.FaceEmbedding.Length == 0)
-                    {
-                        _logger.LogWarning("Attendance action failed: Face verification required but user has no enrolled face - {Email}", request.Username);
-                        return new AttendanceActionResponseDto
-                        {
-                            Success = false,
-                            Message = "Face verification is required but you haven't enrolled your face yet. Please contact your administrator."
-                        };
-                    }
-
-                    // Check if face image was provided
-                    if (string.IsNullOrEmpty(request.FaceImage))
-                    {
-                        _logger.LogWarning("Attendance action failed: Face verification required but no face image provided - {Email}", request.Username);
-                        return new AttendanceActionResponseDto
-                        {
-                            Success = false,
-                            Message = "Face verification is required. Please capture your face photo."
-                        };
-                    }
-
-                    try
-                    {
-                        // Convert base64 face image to byte array
-                        byte[] faceImageBytes = Convert.FromBase64String(request.FaceImage);
-
-                        _logger.LogInformation("Processing face verification for user {Email}. Image size: {Size} bytes",
-                            request.Username, faceImageBytes.Length);
-
-                        // Extract embedding from the provided face image
-                        var embeddingResult = await _faceVerificationService.ExtractEmbeddingAsync(faceImageBytes);
-
-                        if (!embeddingResult.Success)
-                        {
-                            _logger.LogWarning("Face extraction failed for user {Email}: {Error}",
-                                request.Username, embeddingResult.ErrorMessage);
-                            return new AttendanceActionResponseDto
-                            {
-                                Success = false,
-                                Message = $"Face verification failed: {embeddingResult.ErrorMessage ?? "Unable to detect face in image"}"
-                            };
-                        }
-
-                        // Validate exactly one face is detected
-                        if (embeddingResult.FaceCount != 1)
-                        {
-                            var message = embeddingResult.FaceCount == 0
-                                ? "No face detected in the photo. Please ensure your face is clearly visible."
-                                : $"{embeddingResult.FaceCount} faces detected. Please ensure only your face is visible.";
-
-                            _logger.LogWarning("Invalid face count for user {Email}: {FaceCount}",
-                                request.Username, embeddingResult.FaceCount);
-                            return new AttendanceActionResponseDto
-                            {
-                                Success = false,
-                                Message = message
-                            };
-                        }
-
-                        if (embeddingResult.Embedding == null || embeddingResult.Embedding.Length == 0)
-                        {
-                            _logger.LogError("Embedding extraction returned null for user {Email}", request.Username);
-                            return new AttendanceActionResponseDto
-                            {
-                                Success = false,
-                                Message = "Failed to process face image. Please try again."
-                            };
-                        }
-
-                        // Convert stored embedding from byte[] to float[]
-                        float[] storedEmbedding = new float[user.FaceEmbedding.Length / sizeof(float)];
-                        Buffer.BlockCopy(user.FaceEmbedding, 0, storedEmbedding, 0, user.FaceEmbedding.Length);
-
-                        // Compare embeddings to get similarity score
-                        var similarityResult = _faceVerificationService.CompareSimilarity(embeddingResult.Embedding, storedEmbedding);
-
-                        // Store similarity for response
-                        faceSimilarity = similarityResult.Similarity;
-
-                        _logger.LogInformation("Face comparison for user {Email}: Similarity = {Similarity}%",
-                            request.Username, similarityResult.Similarity);
-
-                        // Check similarity threshold (85%)
-                        if (similarityResult.Similarity < 85.0)
-                        {
-                            _logger.LogWarning("Face verification failed for user {Email}: Low similarity ({Similarity}%)",
-                                request.Username, similarityResult.Similarity);
-                            return new AttendanceActionResponseDto
-                            {
-                                Success = false,
-                                Message = $"Face verification failed: Face does not match enrolled photo (similarity: {similarityResult.Similarity:F1}%). Please try again or contact your administrator.",
-                                FaceSimilarity = similarityResult.Similarity
-                            };
-                        }
-
-                        _logger.LogInformation("Face verification successful for user {Email} with similarity {Similarity}%",
-                            request.Username, similarityResult.Similarity);
-                    }
-                    catch (FormatException)
-                    {
-                        _logger.LogWarning("Attendance action failed: Invalid base64 face image - {Email}", request.Username);
-                        return new AttendanceActionResponseDto
-                        {
-                            Success = false,
-                            Message = "Invalid face image format. Please try again."
-                        };
-                    }
-                    catch (Exception faceEx)
-                    {
-                        _logger.LogError(faceEx, "Error during face verification for user {Email}", request.Username);
-                        return new AttendanceActionResponseDto
-                        {
-                            Success = false,
-                            Message = "An error occurred during face verification. Please try again."
-                        };
-                    }
-                }
-
-                // 5. Find device and validate
+                // 4. Find device and validate
                 var device = await _context.Devices
                     .Include(d => d.Branch)
                     .FirstOrDefaultAsync(d => d.DeviceID == request.DeviceID);
@@ -236,7 +114,7 @@ namespace CoreProject.Services
                     };
                 }
 
-                // 6. Verify user is assigned to the same branch as the device
+                // 5. Verify user is assigned to the same branch as the device
                 if (user.BranchID != device.BranchID)
                 {
                     _logger.LogWarning("Attendance action failed: Branch mismatch - User Branch: {UserBranch}, Device Branch: {DeviceBranch}",
@@ -248,21 +126,21 @@ namespace CoreProject.Services
                     };
                 }
 
-                // 7. Get branch timezone and calculate local time
+                // 6. Get branch timezone and calculate local time
                 var branchTimezone = user.Branch?.TimeZone ?? 0;
                 var branchNow = _timezoneService.GetBranchNow(branchTimezone);
                 var today = branchNow.Date;
                 var utcNow = DateTime.UtcNow;
                 var localTime = _timezoneService.ConvertUtcTimeToLocal(utcNow.TimeOfDay, utcNow.Date, branchTimezone);
 
-                // 8. Process action based on type
+                // 7. Process action based on type
                 if (request.ActionType == "CheckIn")
                 {
-                    return await ProcessCheckInAsync(user, device, today, localTime, utcNow, branchTimezone, faceSimilarity);
+                    return await ProcessCheckInAsync(user, device, today, localTime, utcNow, branchTimezone);
                 }
                 else if (request.ActionType == "CheckOut")
                 {
-                    return await ProcessCheckOutAsync(user, device, today, localTime, utcNow, branchTimezone, faceSimilarity);
+                    return await ProcessCheckOutAsync(user, device, today, localTime, utcNow, branchTimezone);
                 }
                 else
                 {
@@ -290,8 +168,7 @@ namespace CoreProject.Services
             DateTime today,
             TimeSpan localTime,
             DateTime utcNow,
-            int branchTimezone,
-            double? faceSimilarity)
+            int branchTimezone)
         {
             try
             {
@@ -353,7 +230,6 @@ namespace CoreProject.Services
                 {
                     Success = true,
                     Message = "Checked in successfully",
-                    FaceSimilarity = faceSimilarity,
                     Data = new AttendanceDataDto
                     {
                         AttendanceId = attendance.ID,
@@ -394,8 +270,7 @@ namespace CoreProject.Services
             DateTime today,
             TimeSpan localTime,
             DateTime utcNow,
-            int branchTimezone,
-            double? faceSimilarity)
+            int branchTimezone)
         {
             try
             {
@@ -463,7 +338,6 @@ namespace CoreProject.Services
                     {
                         Success = true,
                         Message = "Checked out successfully",
-                        FaceSimilarity = faceSimilarity,
                         Data = new AttendanceDataDto
                         {
                             AttendanceId = updatedAttendance.ID,
@@ -1218,6 +1092,210 @@ namespace CoreProject.Services
                 {
                     Success = false,
                     Message = "An error occurred while retrieving user profile"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Verifies user's face against their enrolled photo in the database
+        /// </summary>
+        public async Task<VerifyFaceResponseDto> VerifyUserFaceAsync(int userId, VerifyFaceRequestDto request)
+        {
+            try
+            {
+                // Get user with branch information
+                var user = await _userManager.Users
+                    .Include(u => u.Branch)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("Face verification failed: User not found - {UserId}", userId);
+                    return new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
+                // Check if user has enrolled face
+                if (user.FaceEmbedding == null || user.FaceEmbedding.Length == 0)
+                {
+                    _logger.LogWarning("Face verification failed: User has no enrolled face - {UserId}", userId);
+                    return new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "You haven't enrolled your face yet. Please contact your administrator."
+                    };
+                }
+
+                try
+                {
+                    // Convert base64 face image to byte array
+                    byte[] faceImageBytes = Convert.FromBase64String(request.FaceImage);
+
+                    _logger.LogInformation("Processing face verification for user {UserId}. Image size: {Size} bytes",
+                        userId, faceImageBytes.Length);
+
+                    // Extract embedding from the provided face image
+                    var embeddingResult = await _faceVerificationService.ExtractEmbeddingAsync(faceImageBytes);
+
+                    if (!embeddingResult.Success)
+                    {
+                        _logger.LogWarning("Face extraction failed for user {UserId}: {Error}",
+                            userId, embeddingResult.ErrorMessage);
+                        return new VerifyFaceResponseDto
+                        {
+                            Success = false,
+                            Message = $"Face verification failed: {embeddingResult.ErrorMessage ?? "Unable to detect face in image"}"
+                        };
+                    }
+
+                    // Validate exactly one face is detected
+                    if (embeddingResult.FaceCount != 1)
+                    {
+                        var message = embeddingResult.FaceCount == 0
+                            ? "No face detected in the photo. Please ensure your face is clearly visible."
+                            : $"{embeddingResult.FaceCount} faces detected. Please ensure only your face is visible.";
+
+                        _logger.LogWarning("Invalid face count for user {UserId}: {FaceCount}",
+                            userId, embeddingResult.FaceCount);
+                        return new VerifyFaceResponseDto
+                        {
+                            Success = false,
+                            Message = message
+                        };
+                    }
+
+                    if (embeddingResult.Embedding == null || embeddingResult.Embedding.Length == 0)
+                    {
+                        _logger.LogError("Embedding extraction returned null for user {UserId}", userId);
+                        return new VerifyFaceResponseDto
+                        {
+                            Success = false,
+                            Message = "Failed to process face image. Please try again."
+                        };
+                    }
+
+                    // Convert stored embedding from byte[] to float[]
+                    float[] storedEmbedding = new float[user.FaceEmbedding.Length / sizeof(float)];
+                    Buffer.BlockCopy(user.FaceEmbedding, 0, storedEmbedding, 0, user.FaceEmbedding.Length);
+
+                    // Compare embeddings to get similarity score
+                    var similarityResult = _faceVerificationService.CompareSimilarity(embeddingResult.Embedding, storedEmbedding);
+
+                    _logger.LogInformation("Face comparison for user {UserId}: Similarity = {Similarity}%",
+                        userId, similarityResult.Similarity);
+
+                    // Get similarity threshold from configuration (default to 80.0 if not set)
+                    double threshold = _configuration.GetValue<double>("FaceRecognition:Thresholds:SimilarityMatch", 80.0);
+
+                    // Check similarity threshold
+                    bool isVerified = similarityResult.Similarity >= threshold;
+
+                    if (isVerified)
+                    {
+                        _logger.LogInformation("Face verification successful for user {UserId} with similarity {Similarity}%",
+                            userId, similarityResult.Similarity);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Face verification failed for user {UserId}: Low similarity ({Similarity}%)",
+                            userId, similarityResult.Similarity);
+                    }
+
+                    return new VerifyFaceResponseDto
+                    {
+                        Success = true,
+                        Message = isVerified ? "Face verified successfully" : "Face verification failed",
+                        Data = new FaceVerificationDataDto
+                        {
+                            IsVerified = isVerified,
+                            Similarity = similarityResult.Similarity
+                        }
+                    };
+                }
+                catch (FormatException)
+                {
+                    _logger.LogWarning("Face verification failed: Invalid base64 face image - {UserId}", userId);
+                    return new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "Invalid face image format. Please try again."
+                    };
+                }
+                catch (Exception faceEx)
+                {
+                    _logger.LogError(faceEx, "Error during face verification for user {UserId}", userId);
+                    return new VerifyFaceResponseDto
+                    {
+                        Success = false,
+                        Message = "An error occurred during face verification. Please try again."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error verifying face for user: {UserId}", userId);
+                return new VerifyFaceResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while verifying your face"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the action status for the user (face verification requirements)
+        /// </summary>
+        public async Task<ActionStatusResponseDto> GetActionStatusAsync(int userId)
+        {
+            try
+            {
+                // Get user with branch information
+                var user = await _userManager.Users
+                    .Include(u => u.Branch)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("Action status check failed: User not found - {UserId}", userId);
+                    return new ActionStatusResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
+                // Determine if face verification is required (both branch AND user must have it enabled)
+                bool isFaceVerificationRequired = user.Branch != null &&
+                                                 user.Branch.IsFaceVerificationEnabled &&
+                                                 user.IsFaceVerificationEnabled;
+
+                // Check if user has enrolled their face
+                bool hasFaceEnrollment = user.FaceEmbedding != null && user.FaceEmbedding.Length > 0;
+
+                _logger.LogInformation("Action status for user {UserId}: IsFaceVerificationRequired={Required}, HasFaceEnrollment={HasEnrollment}",
+                    userId, isFaceVerificationRequired, hasFaceEnrollment);
+
+                return new ActionStatusResponseDto
+                {
+                    Success = true,
+                    Message = "Action status retrieved successfully",
+                    Data = new ActionStatusDataDto
+                    {
+                        IsFaceVerificationRequired = isFaceVerificationRequired,
+                        HasFaceEnrollment = hasFaceEnrollment
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting action status for user: {UserId}", userId);
+                return new ActionStatusResponseDto
+                {
+                    Success = false,
+                    Message = "An error occurred while getting action status"
                 };
             }
         }

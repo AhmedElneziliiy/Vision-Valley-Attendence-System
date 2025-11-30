@@ -483,6 +483,79 @@ namespace CoreProject.Migrations
                     b.ToTable("Lamps");
                 });
 
+            modelBuilder.Entity("CoreProject.Models.LampAccessRequest", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime?>("ApprovedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("AutoClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAutoClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LampID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RespondedByUserID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResponseNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("TimeoutAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ApprovedUntil")
+                        .HasFilter("[Status] = 'Approved' AND [IsAutoClosed] = 0");
+
+                    b.HasIndex("RespondedByUserID");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TimeoutAt")
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("LampID", "RequestedAt");
+
+                    b.HasIndex("UserID", "RequestedAt");
+
+                    b.ToTable("LampAccessRequests");
+                });
+
             modelBuilder.Entity("CoreProject.Models.Organization", b =>
                 {
                     b.Property<int>("ID")
@@ -853,6 +926,32 @@ namespace CoreProject.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Timetable");
+                });
+
+            modelBuilder.Entity("CoreProject.Models.LampAccessRequest", b =>
+                {
+                    b.HasOne("CoreProject.Models.Lamp", "Lamp")
+                        .WithMany()
+                        .HasForeignKey("LampID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CoreProject.Models.ApplicationUser", "RespondedByUser")
+                        .WithMany()
+                        .HasForeignKey("RespondedByUserID")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("CoreProject.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Lamp");
+
+                    b.Navigation("RespondedByUser");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CoreProject.Models.Timetable", b =>

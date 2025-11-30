@@ -27,6 +27,9 @@ builder.Services.AddBusinessServices();
 // Lamp Services (WebSocket + Background Scheduler)
 builder.Services.AddLampServices();
 
+// SignalR for real-time notifications
+builder.Services.AddSignalRNotifications();
+
 // Swagger/OpenAPI
 builder.Services.AddSwaggerConfiguration();
 
@@ -77,5 +80,8 @@ app.UseLampWebSocket();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// SignalR Hub Endpoint
+app.MapHub<CoreProject.Hubs.NotificationHub>("/hubs/notifications");
 
 app.Run();

@@ -25,6 +25,7 @@ namespace CoreProject.Context
         public DbSet<Attendance> Attendances => Set<Attendance>();
         public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
         public DbSet<UserImage> UserImages => Set<UserImage>();
+        public DbSet<LampAccessRequest> LampAccessRequests => Set<LampAccessRequest>();
         #endregion
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -146,6 +147,24 @@ namespace CoreProject.Context
                 .HasForeignKey(l => l.TimetableID)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            builder.Entity<LampAccessRequest>()
+                .HasOne(r => r.Lamp)
+                .WithMany()
+                .HasForeignKey(r => r.LampID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<LampAccessRequest>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<LampAccessRequest>()
+                .HasOne(r => r.RespondedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.RespondedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // ------------------------------------------------------------------
             // 5. Indexes
             // ------------------------------------------------------------------
@@ -159,6 +178,23 @@ namespace CoreProject.Context
             builder.Entity<Lamp>()
                 .HasIndex(l => l.DeviceID)
                 .IsUnique();
+
+            builder.Entity<LampAccessRequest>()
+                .HasIndex(r => r.Status);
+
+            builder.Entity<LampAccessRequest>()
+                .HasIndex(r => new { r.UserID, r.RequestedAt });
+
+            builder.Entity<LampAccessRequest>()
+                .HasIndex(r => new { r.LampID, r.RequestedAt });
+
+            builder.Entity<LampAccessRequest>()
+                .HasIndex(r => r.TimeoutAt)
+                .HasFilter("[Status] = 'Pending'");
+
+            builder.Entity<LampAccessRequest>()
+                .HasIndex(r => r.ApprovedUntil)
+                .HasFilter("[Status] = 'Approved' AND [IsAutoClosed] = 0");
 
             // ------------------------------------------------------------------
             // 6. Default Values

@@ -53,11 +53,6 @@ namespace CoreProject.Utilities.DTOs
         [Required(ErrorMessage = "ActionType is required")]
         [RegularExpression("^(CheckIn|CheckOut)$", ErrorMessage = "ActionType must be either 'CheckIn' or 'CheckOut'")]
         public string ActionType { get; set; } = null!;
-
-        /// <summary>
-        /// Base64 encoded face image for face verification (optional, required if face verification is enabled)
-        /// </summary>
-        public string? FaceImage { get; set; }
     }
 
     /// <summary>
@@ -84,6 +79,19 @@ namespace CoreProject.Utilities.DTOs
         /// </summary>
         [Required(ErrorMessage = "DeviceID is required")]
         public string DeviceID { get; set; } = null!;
+    }
+
+    /// <summary>
+    /// Request model for verifying user's face against enrolled photo
+    /// User is identified from JWT token
+    /// </summary>
+    public class VerifyFaceRequestDto
+    {
+        /// <summary>
+        /// Base64 encoded face image to verify
+        /// </summary>
+        [Required(ErrorMessage = "FaceImage is required")]
+        public string FaceImage { get; set; } = null!;
     }
 
     #endregion
@@ -145,11 +153,6 @@ namespace CoreProject.Utilities.DTOs
         /// Attendance data if operation was successful
         /// </summary>
         public AttendanceDataDto? Data { get; set; }
-
-        /// <summary>
-        /// Face verification similarity percentage (0-100). Null if face verification was not performed.
-        /// </summary>
-        public double? FaceSimilarity { get; set; }
     }
 
     /// <summary>
@@ -370,6 +373,80 @@ namespace CoreProject.Utilities.DTOs
         public bool Success { get; set; }
         public string? Message { get; set; }
         public UserDataDto? UserData { get; set; }
+    }
+
+    /// <summary>
+    /// Response model for face verification
+    /// </summary>
+    public class VerifyFaceResponseDto
+    {
+        /// <summary>
+        /// Indicates if the operation was successful
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Message describing the result
+        /// </summary>
+        public string Message { get; set; } = null!;
+
+        /// <summary>
+        /// Face verification result data
+        /// </summary>
+        public FaceVerificationDataDto? Data { get; set; }
+    }
+
+    /// <summary>
+    /// Face verification result data
+    /// </summary>
+    public class FaceVerificationDataDto
+    {
+        /// <summary>
+        /// Indicates if the face was verified successfully
+        /// </summary>
+        public bool IsVerified { get; set; }
+
+        /// <summary>
+        /// Face similarity percentage (0-100)
+        /// </summary>
+        public double Similarity { get; set; }
+    }
+
+    /// <summary>
+    /// Response model for action status (face verification settings)
+    /// </summary>
+    public class ActionStatusResponseDto
+    {
+        /// <summary>
+        /// Indicates if the operation was successful
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Message describing the result
+        /// </summary>
+        public string Message { get; set; } = null!;
+
+        /// <summary>
+        /// Action status data
+        /// </summary>
+        public ActionStatusDataDto? Data { get; set; }
+    }
+
+    /// <summary>
+    /// Action status data containing face verification settings
+    /// </summary>
+    public class ActionStatusDataDto
+    {
+        /// <summary>
+        /// Indicates if face verification is required for this user
+        /// </summary>
+        public bool IsFaceVerificationRequired { get; set; }
+
+        /// <summary>
+        /// Indicates if user has enrolled their face
+        /// </summary>
+        public bool HasFaceEnrollment { get; set; }
     }
 
     #endregion

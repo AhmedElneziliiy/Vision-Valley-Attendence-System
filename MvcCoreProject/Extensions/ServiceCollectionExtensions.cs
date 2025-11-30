@@ -81,6 +81,12 @@ namespace MvcCoreProject.Extensions
                         {
                             context.Token = authHeader.Substring("Bearer ".Length).Trim();
                         }
+                        // Check query string for SignalR connections (access_token)
+                        else if (context.Request.Path.StartsWithSegments("/hubs") &&
+                                 context.Request.Query.TryGetValue("access_token", out var queryToken))
+                        {
+                            context.Token = queryToken;
+                        }
                         // Fallback to cookie (for web app)
                         else if (context.Request.Cookies.TryGetValue("VisionValley_JWT", out var token))
                         {
@@ -163,6 +169,20 @@ namespace MvcCoreProject.Extensions
         {
             services.AddSingleton<LampWebSocketHandler>();
             services.AddHostedService<LampSchedulerService>();
+            services.AddHostedService<RequestTimeoutService>();
+            services.AddHostedService<LampAutoCloseService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Add SignalR for real-time notifications
+        /// </summary>
+        public static IServiceCollection AddSignalRNotifications(this IServiceCollection services)
+        {
+            services.AddSignalR();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<ILampAccessRequestService, LampAccessRequestService>();
 
             return services;
         }

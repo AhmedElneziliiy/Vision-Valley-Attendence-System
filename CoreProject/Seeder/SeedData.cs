@@ -208,7 +208,7 @@ namespace CoreProject.Seeder
         }
         private static async Task SeedRoles(RoleManager<IdentityRole<int>> roleManager)
         {
-            string[] roles = { "Admin", "HR", "Manager", "Employee" };
+            string[] roles = { "Admin", "HR", "Manager", "Employee", "CEO", "TechnicalManager" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))

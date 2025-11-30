@@ -9,7 +9,7 @@
       "MvcCoreProject/1.0.0": {
         "dependencies": {
           "CoreProject": "1.0.0",
-          "FaceRecognition.Core": "1.0.0",
+          "FaceRecognition.Core": "1.1.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.21",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.21",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.21",
@@ -48,7 +48,7 @@
           }
         }
       },
-      "FaceRecognition.Core/1.0.0": {
+      "FaceRecognition.Core/1.1.0": {
         "dependencies": {
           "Microsoft.ML.OnnxRuntime": "1.18.0",
           "OpenCvSharp4": "4.9.0.20240103",
@@ -57,8 +57,8 @@
         },
         "runtime": {
           "lib/net8.0/FaceRecognition.Core.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
           }
         }
       },
@@ -897,6 +897,7 @@
       },
       "CoreProject/1.0.0": {
         "dependencies": {
+          "FaceRecognition.Core": "1.1.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.21",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.21",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.21",
@@ -932,12 +933,12 @@
       "path": "azure.identity/1.11.4",
       "hashPath": "azure.identity.1.11.4.nupkg.sha512"
     },
-    "FaceRecognition.Core/1.0.0": {
+    "FaceRecognition.Core/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-28dKXPc8zUEgcZzaOJnc9FXEj/IOrs94ZpLNca9taiwgpBYNBNUYmqWyUYWoM7RV2DXVJcuuUVhR9yLJF9x+qw==",
-      "path": "facerecognition.core/1.0.0",
-      "hashPath": "facerecognition.core.1.0.0.nupkg.sha512"
+      "sha512": "sha512-ejykeYGo9Rbg6PY69oarhVztqw5MozhfZUeExJzPCw9RYurPqOoswa9mMVT1X4a2xVzJNKKvs+KA+V4/E4IkTg==",
+      "path": "facerecognition.core/1.1.0",
+      "hashPath": "facerecognition.core.1.1.0.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.21": {
       "type": "package",

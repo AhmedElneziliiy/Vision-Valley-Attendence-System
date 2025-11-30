@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreProject.Models
 {
@@ -122,8 +124,24 @@ namespace CoreProject.Models
         /// Helper method to determine if lamp should be ON based on timetable
         /// Includes grace period: 1 hour before start time and 1 hour after end time
         /// </summary>
-        public bool ShouldBeOn(DateTime branchLocalTime, int graceHoursBefore = 1, int graceHoursAfter = 1)
+        public bool ShouldBeOn(DateTime branchLocalTime, int graceHoursBefore = 1, int graceHoursAfter = 1, CoreProject.Context.ApplicationDbContext? context = null)
         {
+            // NEW: Check for active approved access requests (highest priority)
+            if (context != null)
+            {
+                var activeRequest = context.LampAccessRequests
+                    .AsNoTracking()
+                    .FirstOrDefault(r => r.LampID == this.ID
+                                      && r.Status == "Approved"
+                                      && !r.IsAutoClosed
+                                      && r.ApprovedUntil > DateTime.UtcNow);
+
+                if (activeRequest != null)
+                {
+                    return true; // Keep lamp ON due to active access request
+                }
+            }
+
             // If manual override is enabled, use that state
             if (ManualOverride && ManualOverrideState.HasValue)
             {

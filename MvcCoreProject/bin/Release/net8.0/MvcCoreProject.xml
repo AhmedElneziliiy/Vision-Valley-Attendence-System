@@ -162,6 +162,64 @@
              <response code="200">Profile retrieved successfully</response>
              <response code="401">User not authorized</response>
         </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.VerifyFace(CoreProject.Utilities.DTOs.VerifyFaceRequestDto)">
+             <summary>
+             Verify user's face against their enrolled photo
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 POST /api/attendance/verify-face
+                 Authorization: Bearer {your-jwt-token}
+                 {
+                     "faceImage": "base64-encoded-image-string"
+                 }
+            
+             User must be authenticated (requires JWT token in Authorization header)
+             User ID is extracted from the JWT token automatically
+            
+             The endpoint:
+             - Verifies the submitted face image against the user's enrolled face photo in the database
+             - Returns whether the face is verified (similarity >= 85%)
+             - Returns the similarity percentage
+            
+             Returns:
+             - IsVerified: true if similarity >= 85%, false otherwise
+             - Similarity: percentage match (0-100)
+             - User information
+             </remarks>
+             <param name="request">Face verification request with base64 encoded image</param>
+             <returns>Face verification response with verification result and similarity</returns>
+             <response code="200">Verification processed successfully</response>
+             <response code="400">Invalid request</response>
+             <response code="401">User not authorized</response>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.AttendanceApiController.GetActionStatus">
+             <summary>
+             Get action status for the authenticated user (face verification requirements)
+             </summary>
+             <remarks>
+             Sample request:
+            
+                 GET /api/attendance/action-status
+                 Authorization: Bearer {your-jwt-token}
+            
+             User must be authenticated (requires JWT token in Authorization header)
+             User ID is extracted from the JWT token automatically
+            
+             Returns:
+             - isFaceVerificationRequired: true if face verification is required for this user
+             - hasFaceEnrollment: true if user has enrolled their face photo
+            
+             Face verification is required when both:
+             - The branch has face verification enabled
+             - The user has face verification enabled
+             </remarks>
+             <returns>Action status with face verification settings</returns>
+             <response code="200">Status retrieved successfully</response>
+             <response code="400">Invalid request</response>
+             <response code="401">User not authorized</response>
+        </member>
         <member name="T:MvcCoreProject.Controllers.Api.AuthApiController">
             <summary>
             Authentication API Controller for Mobile App Integration

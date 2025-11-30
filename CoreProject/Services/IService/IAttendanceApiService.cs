@@ -52,5 +52,22 @@ namespace CoreProject.Services.IService
         /// <param name="userId">User ID from JWT token</param>
         /// <returns>User profile response with complete user data</returns>
         Task<UserProfileResponseDto> GetUserProfileAsync(int userId);
+
+        /// <summary>
+        /// Verifies user's face against their enrolled photo in the database
+        /// User is identified from JWT token
+        /// </summary>
+        /// <param name="userId">User ID from JWT token</param>
+        /// <param name="request">Face verification request containing the face image</param>
+        /// <returns>Face verification response with similarity score</returns>
+        Task<VerifyFaceResponseDto> VerifyUserFaceAsync(int userId, VerifyFaceRequestDto request);
+
+        /// <summary>
+        /// Gets the action status for the user (face verification requirements)
+        /// Returns if face verification is required and if user has enrolled their face
+        /// </summary>
+        /// <param name="userId">User ID from JWT token</param>
+        /// <returns>Action status response with face verification settings</returns>
+        Task<ActionStatusResponseDto> GetActionStatusAsync(int userId);
     }
 }
