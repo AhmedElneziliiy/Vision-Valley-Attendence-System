@@ -1,0 +1,401 @@
+================================================================================
+LAMP ACCESS REQUEST SYSTEM - API QUICK REFERENCE
+Vision Valley Attendance System
+================================================================================
+
+BASE URL: https://yourserver.com/api
+SIGNALR HUB: wss://yourserver.com/hubs/notifications
+
+================================================================================
+1. AUTHENTICATION
+================================================================================
+
+All API endpoints require JWT token in Authorization header:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+For SignalR WebSocket connection, send token in query string:
+wss://yourserver.com/hubs/notifications?access_token=YOUR_JWT_TOKEN
+
+================================================================================
+2. API ENDPOINTS
+================================================================================
+
+2.1. SUBMIT LAMP ACCESS REQUEST (Employee)
+------------------------------------------------------------
+POST /api/lamp-access/request
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+  Content-Type: application/json
+
+Request Body:
+{
+  "lampID": 1,
+  "reason": "Emergency access needed"
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Request submitted successfully. Managers have been notified.",
+  "request": {
+    "id": 1,
+    "lampID": 1,
+    "lampName": "Main Gate Lamp",
+    "status": "Pending",
+    "requestedAt": "2025-11-30T14:30:00Z",
+    "timeoutAt": "2025-11-30T14:35:00Z",
+    "reason": "Emergency access needed"
+  }
+}
+
+Errors:
+- 400: Lamp not found / User not in same branch / Too many pending requests
+- 401: Unauthorized (invalid token)
+
+------------------------------------------------------------
+
+2.2. APPROVE REQUEST (Manager)
+------------------------------------------------------------
+POST /api/lamp-access/respond
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+  Content-Type: application/json
+
+Request Body:
+{
+  "requestID": 1,
+  "action": "Approve",
+  "notes": "Approved for emergency"
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Request approved successfully. Lamp has been opened for 1 hour."
+}
+
+Errors:
+- 400: Request not found / Already approved/declined / Timed out
+- 401: Unauthorized
+
+------------------------------------------------------------
+
+2.3. DECLINE REQUEST (Manager)
+------------------------------------------------------------
+POST /api/lamp-access/respond
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+  Content-Type: application/json
+
+Request Body:
+{
+  "requestID": 1,
+  "action": "Decline",
+  "notes": "Not authorized"
+}
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Request declined successfully."
+}
+
+------------------------------------------------------------
+
+2.4. GET PENDING REQUESTS
+------------------------------------------------------------
+GET /api/lamp-access/pending
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Found 2 pending request(s).",
+  "requests": [
+    {
+      "id": 1,
+      "lampID": 1,
+      "lampName": "Main Gate Lamp",
+      "status": "Pending",
+      "requestedAt": "2025-11-30T14:30:00Z",
+      "timeoutAt": "2025-11-30T14:35:00Z",
+      "reason": "Emergency access"
+    }
+  ]
+}
+
+Note:
+- For Employee: Returns only their own pending requests
+- For Manager: Returns all pending requests in their branch
+
+------------------------------------------------------------
+
+2.5. GET REQUEST HISTORY
+------------------------------------------------------------
+GET /api/lamp-access/history?from=2025-11-01&to=2025-11-30
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+
+Query Parameters (optional):
+  from: Start date (ISO 8601 format)
+  to: End date (ISO 8601 format)
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Found 5 request(s) in history.",
+  "requests": [
+    {
+      "id": 1,
+      "lampName": "Main Gate Lamp",
+      "status": "Approved",
+      "requestedAt": "2025-11-30T14:30:00Z",
+      "respondedBy": "Manager Smith",
+      "respondedAt": "2025-11-30T14:32:00Z",
+      "approvedUntil": "2025-11-30T15:32:00Z",
+      "isAutoClosed": true,
+      "autoClosedAt": "2025-11-30T15:32:00Z"
+    }
+  ]
+}
+
+------------------------------------------------------------
+
+2.6. GET REQUEST BY ID
+------------------------------------------------------------
+GET /api/lamp-access/{requestId}
+
+Headers:
+  Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (200 OK):
+{
+  "success": true,
+  "message": "Request found.",
+  "request": {
+    "id": 1,
+    "lampID": 1,
+    "lampName": "Main Gate Lamp",
+    "status": "Approved",
+    ...
+  }
+}
+
+================================================================================
+3. SIGNALR WEBSOCKET NOTIFICATIONS
+================================================================================
+
+3.1. CONNECTION
+------------------------------------------------------------
+URL: wss://yourserver.com/hubs/notifications?access_token=YOUR_JWT_TOKEN
+
+Connection stays open while app is active.
+Auto-reconnects if connection drops.
+
+------------------------------------------------------------
+
+3.2. LISTENING FOR NOTIFICATIONS
+------------------------------------------------------------
+Event Name: "ReceiveNotification"
+
+All notifications are sent through this single event.
+Parse the "type" field to determine notification type.
+
+------------------------------------------------------------
+
+3.3. NOTIFICATION TYPES
+------------------------------------------------------------
+
+Type 1: LampAccessRequest (Sent to Managers)
+{
+  "type": "LampAccessRequest",
+  "requestId": 123,
+  "lampId": 5,
+  "lampName": "Main Gate Lamp",
+  "requesterUserId": 42,
+  "requesterName": "John Doe",
+  "branchName": "Dubai HQ",
+  "reason": "Emergency access needed",
+  "requestedAt": "2025-11-30T14:30:00Z",
+  "timeoutAt": "2025-11-30T14:35:00Z"
+}
+
+Type 2: LampAccessApproved (Sent to Employee)
+{
+  "type": "LampAccessApproved",
+  "requestId": 123,
+  "lampName": "Main Gate Lamp",
+  "approvedByName": "Manager Smith",
+  "approvedAt": "2025-11-30T14:32:00Z",
+  "approvedUntil": "2025-11-30T15:32:00Z",
+  "message": "Your request has been approved. Lamp will remain open for 1 hour."
+}
+
+Type 3: LampAccessDeclined (Sent to Employee)
+{
+  "type": "LampAccessDeclined",
+  "requestId": 123,
+  "lampName": "Main Gate Lamp",
+  "declinedByName": "Manager Smith",
+  "responseNotes": "Not authorized",
+  "message": "Your request has been declined."
+}
+
+Type 4: LampAccessTimeout (Sent to Employee)
+{
+  "type": "LampAccessTimeout",
+  "requestId": 123,
+  "lampName": "Main Gate Lamp",
+  "message": "Request timed out. No manager responded within 5 minutes."
+}
+
+Type 5: LampAccessAutoClose (Sent to Employee)
+{
+  "type": "LampAccessAutoClose",
+  "requestId": 123,
+  "lampName": "Main Gate Lamp",
+  "message": "Lamp auto-closed after 1 hour."
+}
+
+Type 6: LampAccessAlreadyHandled (Sent to Other Managers)
+{
+  "type": "LampAccessAlreadyHandled",
+  "requestId": 123,
+  "status": "Approved",
+  "handledByName": "Manager Smith",
+  "message": "This request was already approved by Manager Smith."
+}
+
+================================================================================
+4. FLUTTER PACKAGES NEEDED
+================================================================================
+
+pubspec.yaml:
+  dependencies:
+    http: ^1.1.0
+    signalr_netcore: ^1.3.6
+    shared_preferences: ^2.2.2
+    flutter_local_notifications: ^16.3.0
+
+================================================================================
+5. BUSINESS RULES
+================================================================================
+
+5.1. Request Submission
+- Employee must be in same branch as lamp
+- Lamp must be outside schedule hours (no request needed during schedule)
+- Employee can't have more than 3 pending requests
+- Request automatically times out after 5 minutes if no manager responds
+
+5.2. Request Approval/Decline
+- Only Manager, CEO, or TechnicalManager can approve/decline
+- First manager to respond wins (race condition protection)
+- If request already handled, API returns error
+- Approval opens lamp for 1 hour
+
+5.3. Auto-Timeout
+- Runs every 60 seconds (background service)
+- Requests pending for more than 5 minutes are auto-rejected
+- Employee receives notification
+
+5.4. Auto-Close
+- Runs every 60 seconds (background service)
+- Approved lamps auto-close after 1 hour
+- Employee receives notification
+
+5.5. Lamp Scheduler Integration
+- Lamp scheduler checks for active access requests
+- Won't close lamp during 1-hour approval window
+- After approval expires, normal schedule resumes
+
+================================================================================
+6. NOTIFICATION RECIPIENTS
+================================================================================
+
+When employee submits request, notifications are sent to:
+1. All managers in the SAME BRANCH as the lamp
+2. All users with "CEO" role (all branches)
+3. All users with "TechnicalManager" role (all branches)
+
+================================================================================
+7. COMMON ERROR CODES
+================================================================================
+
+200 OK - Success
+400 Bad Request - Validation error / Business rule violation
+401 Unauthorized - Invalid or missing JWT token
+404 Not Found - Request/Lamp not found
+500 Internal Server Error - Server error
+
+================================================================================
+8. TESTING CREDENTIALS (Development)
+================================================================================
+
+Employee:
+  Email: emp@visionvalley.com
+  Password: Pass@123
+
+Manager:
+  Email: manager@visionvalley.com
+  Password: Pass@123
+
+Admin (can be assigned CEO role):
+  Email: admin@visionvalley.com
+  Password: Pass@123
+
+================================================================================
+9. QUICK START GUIDE
+================================================================================
+
+Step 1: Login
+POST /api/auth/login
+{ "email": "emp@visionvalley.com", "password": "Pass@123" }
+-> Save JWT token
+
+Step 2: Connect SignalR
+wss://yourserver.com/hubs/notifications?access_token=YOUR_JWT
+-> Listen for "ReceiveNotification" event
+
+Step 3: Submit Request (Employee)
+POST /api/lamp-access/request
+{ "lampID": 1, "reason": "Testing" }
+
+Step 4: Manager Receives Notification
+SignalR event fires with type "LampAccessRequest"
+
+Step 5: Manager Approves
+POST /api/lamp-access/respond
+{ "requestID": 1, "action": "Approve" }
+
+Step 6: Employee Receives Notification
+SignalR event fires with type "LampAccessApproved"
+
+Step 7: Lamp Opens
+Physical lamp turns ON via WebSocket to ESP32 device
+
+Step 8: After 1 Hour
+Lamp auto-closes, employee receives "LampAccessAutoClose" notification
+
+================================================================================
+10. SUPPORT
+================================================================================
+
+For API issues:
+- Check Swagger UI: http://yourserver.com/swagger
+- Verify JWT token is valid
+- Check server logs
+
+For SignalR issues:
+- Verify token is in query string
+- Check connection state
+- Monitor server logs for "NotificationHub" entries
+
+================================================================================
+END OF QUICK REFERENCE
+================================================================================

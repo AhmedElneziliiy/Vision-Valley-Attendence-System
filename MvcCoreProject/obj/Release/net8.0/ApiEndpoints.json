@@ -520,5 +520,134 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "MvcCoreProject.Controllers.Api.LampAccessRequestApiController",
+    "Method": "GetRequestById",
+    "RelativePath": "api/lamp-access/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "CoreProject.Utilities.DTOs.LampAccessResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "MvcCoreProject.Controllers.Api.LampAccessRequestApiController",
+    "Method": "GetHistory",
+    "RelativePath": "api/lamp-access/history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "from",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "to",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "CoreProject.Utilities.DTOs.LampAccessRequestListDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "MvcCoreProject.Controllers.Api.LampAccessRequestApiController",
+    "Method": "GetPendingRequests",
+    "RelativePath": "api/lamp-access/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "CoreProject.Utilities.DTOs.LampAccessRequestListDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "MvcCoreProject.Controllers.Api.LampAccessRequestApiController",
+    "Method": "SubmitRequest",
+    "RelativePath": "api/lamp-access/request",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "CoreProject.Utilities.DTOs.LampAccessRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "CoreProject.Utilities.DTOs.LampAccessResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "MvcCoreProject.Controllers.Api.LampAccessRequestApiController",
+    "Method": "RespondToRequest",
+    "RelativePath": "api/lamp-access/respond",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "CoreProject.Utilities.DTOs.LampAccessResponseRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "CoreProject.Utilities.DTOs.LampAccessResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   }
 ]

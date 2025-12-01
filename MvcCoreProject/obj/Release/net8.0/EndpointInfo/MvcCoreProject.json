@@ -966,6 +966,218 @@
           }
         }
       }
+    },
+    "/api/lamp-access/request": {
+      "post": {
+        "tags": [
+          "LampAccessRequestApi"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lamp-access/respond": {
+      "post": {
+        "tags": [
+          "LampAccessRequestApi"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessResponseRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessResponseRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LampAccessResponseRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lamp-access/pending": {
+      "get": {
+        "tags": [
+          "LampAccessRequestApi"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lamp-access/history": {
+      "get": {
+        "tags": [
+          "LampAccessRequestApi"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessRequestListDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/lamp-access/{requestId}": {
+      "get": {
+        "tags": [
+          "LampAccessRequestApi"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LampAccessResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1360,6 +1572,148 @@
           "similarity": {
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LampAccessRequestDetailsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lampID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lampName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lampDeviceID": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeoutAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "respondedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "respondedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "responseNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "isAutoClosed": {
+            "type": "boolean"
+          },
+          "autoClosedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LampAccessRequestDto": {
+        "required": [
+          "lampID"
+        ],
+        "type": "object",
+        "properties": {
+          "lampID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reason": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LampAccessRequestListDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LampAccessRequestDetailsDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LampAccessResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "request": {
+            "$ref": "#/components/schemas/LampAccessRequestDetailsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LampAccessResponseRequestDto": {
+        "required": [
+          "action",
+          "requestID"
+        ],
+        "type": "object",
+        "properties": {
+          "requestID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "action": {
+            "minLength": 1,
+            "pattern": "^(Approve|Decline)$",
+            "type": "string"
+          },
+          "notes": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

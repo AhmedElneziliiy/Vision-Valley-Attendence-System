@@ -316,6 +316,33 @@
             Verify if two faces belong to the same person
             </summary>
         </member>
+        <member name="M:MvcCoreProject.Controllers.Api.LampAccessRequestApiController.SubmitRequest(CoreProject.Utilities.DTOs.LampAccessRequestDto)">
+            <summary>
+            Employee submits a lamp access request
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.LampAccessRequestApiController.RespondToRequest(CoreProject.Utilities.DTOs.LampAccessResponseRequestDto)">
+            <summary>
+            Manager approves or declines a lamp access request
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.LampAccessRequestApiController.GetPendingRequests">
+            <summary>
+            Get pending lamp access requests
+            - For managers: returns requests they can approve (in their branch)
+            - For employees: returns their own pending requests
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.LampAccessRequestApiController.GetHistory(System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <summary>
+            Get request history for the authenticated user
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Controllers.Api.LampAccessRequestApiController.GetRequestById(System.Int32)">
+            <summary>
+            Get details of a specific request by ID
+            </summary>
+        </member>
         <member name="M:MvcCoreProject.Extensions.ApplicationBuilderExtensions.UseWebSocketConfiguration(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary>
             Configure WebSocket support for ESP32 lamp connections
@@ -364,6 +391,11 @@
         <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddLampServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Add Lamp WebSocket and Background Scheduler services
+            </summary>
+        </member>
+        <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddSignalRNotifications(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Add SignalR for real-time notifications
             </summary>
         </member>
         <member name="M:MvcCoreProject.Extensions.ServiceCollectionExtensions.AddSwaggerConfiguration(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
