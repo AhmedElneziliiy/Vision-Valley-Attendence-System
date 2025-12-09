@@ -45,16 +45,32 @@ namespace CoreProject.Services
 
                 var departments = await _departmentRepo.GetDepartmentsWithDetailsAsync();
 
-                // Non-Admin users: filter by their branch
+                // Admin: See all departments (no filter)
+                // HR in main branch: See all departments (no filter)
+                // HR in specific branch: See only their branch departments
                 if (!currentUser.IsInRole("Admin"))
                 {
-                    var currentBranchIdStr = currentUser.FindFirst("BranchID")?.Value;
-                    if (int.TryParse(currentBranchIdStr, out int currentBranchId))
+                    var userIdStr = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdStr, out int userId))
                     {
-                        departments = departments.Where(d => d.BranchID == currentBranchId);
+                        var currentUserEntity = await _context.Users
+                            .Include(u => u.Branch)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
+
+                        // Only filter if NOT in main branch
+                        if (currentUserEntity?.Branch != null && !currentUserEntity.Branch.IsMainBranch)
+                        {
+                            departments = departments.Where(d => d.BranchID == currentUserEntity.BranchID);
+                            _logger.LogInformation("Non-main branch user filtering departments by branch: {BranchId}", currentUserEntity.BranchID);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Main branch user - showing all departments");
+                        }
                     }
                     else
                     {
+                        _logger.LogWarning("User has no valid user ID claim");
                         return Enumerable.Empty<DepartmentViewModel>();
                     }
                 }

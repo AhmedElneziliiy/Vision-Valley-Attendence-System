@@ -44,24 +44,29 @@ namespace CoreProject.Services
 
                 IEnumerable<Timetable> timetables;
 
-                // Non-Admin: Filter by current user's branch
-                if (!currentUser.IsInRole("Admin"))
+                // Check if user is Admin or HR in main branch
+                bool isAdminOrMainBranchHR = currentUser.IsInRole("Admin");
+
+                if (!isAdminOrMainBranchHR && (currentUser.IsInRole("HR") || currentUser.IsInRole("Manager")))
                 {
-                    var currentBranchIdStr = currentUser.FindFirst("BranchID")?.Value;
-                    if (int.TryParse(currentBranchIdStr, out int currentBranchId))
+                    // Check if user is in main branch
+                    var userIdStr = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdStr, out int userId))
                     {
-                        timetables = await _timetableRepo.GetTimetablesByBranchAsync(currentBranchId);
-                        _logger.LogInformation("Non-admin user filtering by branch: {BranchId}", currentBranchId);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Non-admin user has no valid BranchID claim");
-                        return Enumerable.Empty<TimetableViewModel>();
+                        var user = await _context.Users
+                            .Include(u => u.Branch)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
+
+                        if (user?.Branch?.IsMainBranch == true)
+                        {
+                            isAdminOrMainBranchHR = true;
+                        }
                     }
                 }
-                else
+
+                // Admin or HR/Manager in main branch: Get all or filter by branchId if provided
+                if (isAdminOrMainBranchHR)
                 {
-                    // Admin: Get all or filter by branchId if provided
                     if (branchId.HasValue)
                     {
                         timetables = await _timetableRepo.GetTimetablesByBranchAsync(branchId.Value);
@@ -69,6 +74,21 @@ namespace CoreProject.Services
                     else
                     {
                         timetables = await _timetableRepo.GetTimetablesWithDetailsAsync();
+                    }
+                }
+                else
+                {
+                    // Non-main branch HR/Manager: Filter by current user's branch
+                    var currentBranchIdStr = currentUser.FindFirst("BranchID")?.Value;
+                    if (int.TryParse(currentBranchIdStr, out int currentBranchId))
+                    {
+                        timetables = await _timetableRepo.GetTimetablesByBranchAsync(currentBranchId);
+                        _logger.LogInformation("Non-main branch user filtering by branch: {BranchId}", currentBranchId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("User has no valid BranchID claim");
+                        return Enumerable.Empty<TimetableViewModel>();
                     }
                 }
 
@@ -170,9 +190,34 @@ namespace CoreProject.Services
             {
                 IEnumerable<Branch> branches;
 
-                // Non-Admin: only show their branch
-                if (!currentUser.IsInRole("Admin"))
+                // Check if user is Admin or HR in main branch
+                bool isAdminOrMainBranchHR = currentUser.IsInRole("Admin");
+
+                if (!isAdminOrMainBranchHR && (currentUser.IsInRole("HR") || currentUser.IsInRole("Manager")))
                 {
+                    // Check if user is in main branch
+                    var userIdStr = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdStr, out int userId))
+                    {
+                        var user = await _context.Users
+                            .Include(u => u.Branch)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
+
+                        if (user?.Branch?.IsMainBranch == true)
+                        {
+                            isAdminOrMainBranchHR = true;
+                        }
+                    }
+                }
+
+                // Admin or HR/Manager in main branch: show all branches
+                if (isAdminOrMainBranchHR)
+                {
+                    branches = await _branchRepo.GetAllAsync();
+                }
+                else
+                {
+                    // Non-main branch HR/Manager: only show their branch
                     var currentBranchIdStr = currentUser.FindFirst("BranchID")?.Value;
                     if (int.TryParse(currentBranchIdStr, out int currentBranchId))
                     {
@@ -183,10 +228,6 @@ namespace CoreProject.Services
                     {
                         branches = Enumerable.Empty<Branch>();
                     }
-                }
-                else
-                {
-                    branches = await _branchRepo.GetAllAsync();
                 }
 
                 return new TimetableCreateViewModel

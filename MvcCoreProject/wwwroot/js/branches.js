@@ -175,8 +175,82 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+// National Holidays Management
+let holidays = [];
+
+function loadExistingHolidays() {
+    const hiddenInput = document.getElementById('nationalHolidaysHidden');
+    if (hiddenInput && hiddenInput.value) {
+        try {
+            holidays = JSON.parse(hiddenInput.value);
+            displayHolidays();
+        } catch (e) {
+            console.error('Error parsing existing holidays:', e);
+            holidays = [];
+        }
+    }
+}
+
+function addHoliday() {
+    const dateInput = document.getElementById('holidayDatePicker');
+    const dateValue = dateInput.value;
+
+    if (!dateValue) {
+        alert('Please select a date');
+        return;
+    }
+
+    if (holidays.includes(dateValue)) {
+        alert('This date is already added');
+        return;
+    }
+
+    holidays.push(dateValue);
+    holidays.sort(); // Sort dates
+    updateHiddenInput();
+    displayHolidays();
+    dateInput.value = ''; // Clear the input
+}
+
+function removeHoliday(date) {
+    holidays = holidays.filter(h => h !== date);
+    updateHiddenInput();
+    displayHolidays();
+}
+
+function updateHiddenInput() {
+    const hiddenInput = document.getElementById('nationalHolidaysHidden');
+    hiddenInput.value = JSON.stringify(holidays);
+}
+
+function displayHolidays() {
+    const holidaysList = document.getElementById('holidaysList');
+
+    if (holidays.length === 0) {
+        holidaysList.innerHTML = '<p class="text-muted mb-0 p-2">No holidays added yet</p>';
+        return;
+    }
+
+    holidaysList.innerHTML = holidays.map(date => `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <span><i class="bi bi-calendar-event text-primary"></i> ${formatDate(date)}</span>
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeHoliday('${date}')">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 // Form validation enhancement
 document.addEventListener('DOMContentLoaded', function () {
+    // Load existing holidays on page load
+    loadExistingHolidays();
+
     const createForm = document.getElementById('createBranchForm');
     const editForm = document.getElementById('editBranchForm');
 

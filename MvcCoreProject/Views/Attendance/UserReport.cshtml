@@ -67,95 +67,170 @@
 
     <!-- Summary Statistics -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-2 col-md-4 mb-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1">Total Days</p>
-                            <h3 class="mb-0">@Model.Summary.TotalDays</h3>
-                            <small class="text-muted">In period</small>
+                            <p class="text-muted mb-1 small">Total Days</p>
+                            <h4 class="mb-0">@Model.Summary.TotalDays</h4>
                         </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-calendar3 text-primary fs-4"></i>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-calendar3 text-primary fs-5"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-2 col-md-4 mb-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1">Present Days</p>
-                            <h3 class="mb-0 text-success">@Model.Summary.PresentDays</h3>
+                            <p class="text-muted mb-1 small">Working Days</p>
+                            <h4 class="mb-0 text-primary">@Model.Summary.WorkingDays</h4>
+                            <small class="text-muted">Excl. weekends/holidays</small>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-briefcase text-primary fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Present</p>
+                            <h4 class="mb-0 text-success">@Model.Summary.PresentDays</h4>
                             <small class="text-muted">
-                                @if (Model.Summary.TotalDays > 0)
+                                @if (Model.Summary.WorkingDays > 0)
                                 {
-                                    var percentage = (Model.Summary.PresentDays * 100.0) / Model.Summary.TotalDays;
-                                    @($"{percentage:F1}% attendance")
+                                    @($"{Model.Summary.ActualAttendanceRate:F1}%")
                                 }
                             </small>
                         </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-check-circle text-success fs-4"></i>
+                        <div class="bg-success bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-check-circle text-success fs-5"></i>
                         </div>
                     </div>
-                    @if (Model.Summary.TotalDays > 0)
-                    {
-                        var percentage = (Model.Summary.PresentDays * 100.0) / Model.Summary.TotalDays;
-                        <div class="progress mt-3" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: @(percentage)%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-2 col-md-4 mb-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1">Absent Days</p>
-                            <h3 class="mb-0 text-danger">@Model.Summary.AbsentDays</h3>
-                            <small class="text-muted">
-                                @if (Model.Summary.TotalDays > 0)
-                                {
-                                    var percentage = (Model.Summary.AbsentDays * 100.0) / Model.Summary.TotalDays;
-                                    @($"{percentage:F1}% absent")
-                                }
-                            </small>
+                            <p class="text-muted mb-1 small">Absent</p>
+                            <h4 class="mb-0 text-danger">@Model.Summary.AbsentDays</h4>
+                            <small class="text-muted">Working days only</small>
                         </div>
-                        <div class="bg-danger bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-x-circle text-danger fs-4"></i>
+                        <div class="bg-danger bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-x-circle text-danger fs-5"></i>
                         </div>
                     </div>
-                    @if (Model.Summary.TotalDays > 0)
-                    {
-                        var percentage = (Model.Summary.AbsentDays * 100.0) / Model.Summary.TotalDays;
-                        <div class="progress mt-3" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: @(percentage)%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-2 col-md-4 mb-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <p class="text-muted mb-1">Total Hours</p>
-                            <h3 class="mb-0 text-info">@((Model.Summary.TotalMinutes / 60.0).ToString("F1"))</h3>
-                            <small class="text-muted">
-                                Avg: @((Model.Summary.AverageMinutes / 60.0).ToString("F1"))h/day
-                            </small>
+                            <p class="text-muted mb-1 small">Weekends</p>
+                            <h4 class="mb-0 text-secondary">@Model.Summary.WeekendDays</h4>
+                            <small class="text-muted">Fri/Sat</small>
                         </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-clock-history text-info fs-4"></i>
+                        <div class="bg-secondary bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-calendar-x text-secondary fs-5"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Holidays</p>
+                            <h4 class="mb-0 text-info">@Model.Summary.HolidayDays</h4>
+                            <small class="text-muted">National</small>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-2 rounded">
+                            <i class="bi bi-sun text-info fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Detailed Attendance Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold">Total Days in Period:</td>
+                                <td class="text-end">@Model.Summary.TotalDays days</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold ps-3"><i class="bi bi-dot"></i> Weekend Days (Fri/Sat):</td>
+                                <td class="text-end text-secondary">@Model.Summary.WeekendDays days</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold ps-3"><i class="bi bi-dot"></i> National Holidays:</td>
+                                <td class="text-end text-info">@Model.Summary.HolidayDays days</td>
+                            </tr>
+                            <tr class="border-top">
+                                <td class="fw-bold text-primary">Working Days (Should be Present):</td>
+                                <td class="text-end fw-bold text-primary">@Model.Summary.WorkingDays days</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold text-success">Days Actually Present:</td>
+                                <td class="text-end fw-bold text-success">@Model.Summary.PresentDays days</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold text-danger">Days Absent (Working Days):</td>
+                                <td class="text-end fw-bold text-danger">@Model.Summary.AbsentDays days</td>
+                            </tr>
+                            <tr class="border-top">
+                                <td class="fw-bold">Actual Attendance Rate:</td>
+                                <td class="text-end fw-bold">
+                                    @if (Model.Summary.WorkingDays > 0)
+                                    {
+                                        <span class="badge bg-@(Model.Summary.ActualAttendanceRate >= 90 ? "success" : Model.Summary.ActualAttendanceRate >= 75 ? "warning" : "danger") fs-6">
+                                            @Model.Summary.ActualAttendanceRate.ToString("F1")%
+                                        </span>
+                                        <small class="text-muted d-block">(@Model.Summary.PresentDays out of @Model.Summary.WorkingDays working days)</small>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Total Hours Worked:</td>
+                                <td class="text-end">@Model.Summary.TotalHours</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Average Hours/Day:</td>
+                                <td class="text-end">@Model.Summary.AverageHours</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

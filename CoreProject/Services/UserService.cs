@@ -58,18 +58,32 @@ namespace CoreProject.Services
                     .Include(u => u.Department)
                     .AsQueryable();
 
-                // Non-Admin: Filter by current user's branch
+                // Admin: See all users (no filter)
+                // HR/Manager in main branch: See all users (no filter)
+                // HR/Manager in specific branch: See only their branch users
                 if (!currentUser.IsInRole("Admin"))
                 {
-                    var currentBranchIdStr = currentUser.FindFirst("BranchID")?.Value;
-                    if (int.TryParse(currentBranchIdStr, out int currentBranchId))
+                    var userIdStr = currentUser.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(userIdStr, out int userId))
                     {
-                        usersQuery = usersQuery.Where(u => u.BranchID == currentBranchId);
-                        _logger.LogInformation("Non-admin user filtering by branch: {BranchId}", currentBranchId);
+                        var currentUserEntity = await _context.Users
+                            .Include(u => u.Branch)
+                            .FirstOrDefaultAsync(u => u.Id == userId);
+
+                        // Only filter if NOT in main branch
+                        if (currentUserEntity?.Branch != null && !currentUserEntity.Branch.IsMainBranch)
+                        {
+                            usersQuery = usersQuery.Where(u => u.BranchID == currentUserEntity.BranchID);
+                            _logger.LogInformation("Non-main branch user filtering by branch: {BranchId}", currentUserEntity.BranchID);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Main branch user - showing all users");
+                        }
                     }
                     else
                     {
-                        _logger.LogWarning("Non-admin user has no valid BranchID claim");
+                        _logger.LogWarning("User has no valid user ID claim");
                         return Enumerable.Empty<UserViewModel>();
                     }
                 }
@@ -225,7 +239,9 @@ namespace CoreProject.Services
                     VacationBalance = 21
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                // Use default password if none provided
+                var password = string.IsNullOrWhiteSpace(model.Password) ? "Pass@123" : model.Password;
+                var result = await _userManager.CreateAsync(user, password);
 
                 if (!result.Succeeded)
                 {

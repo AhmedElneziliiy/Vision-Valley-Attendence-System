@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace MvcCoreProject.Controllers
 {
-    [Authorize(Roles = "Admin,HR")]
+    [Authorize(Roles = "Admin")]
     public class ManualAttendanceController : Controller
     {
         private readonly IAttendanceService _attendanceService;

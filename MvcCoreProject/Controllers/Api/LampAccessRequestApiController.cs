@@ -27,7 +27,9 @@ namespace MvcCoreProject.Controllers.Api
         /// Employee submits a lamp access request
         /// </summary>
         [HttpPost("request")]
-        [Authorize(Roles = "Employee,Manager,HR")]
+        // [Authorize(Roles = "Employee,Manager,HR,Admin")]
+        [Authorize]  // Accepts any authenticated user!
+
         public async Task<ActionResult<LampAccessResponseDto>> SubmitRequest([FromBody] LampAccessRequestDto dto)
         {
             try
@@ -79,6 +81,8 @@ namespace MvcCoreProject.Controllers.Api
         /// </summary>
         [HttpPost("respond")]
         [Authorize(Roles = "Manager,CEO,TechnicalManager")]
+        // [Authorize]  // Accepts any authenticated user!
+
         public async Task<ActionResult<LampAccessResponseDto>> RespondToRequest([FromBody] LampAccessResponseRequestDto dto)
         {
             try

@@ -10,10 +10,10 @@ namespace CoreProject.Repositories.Interfaces
     public interface IDashboardRepository
     {
         IRepository<Attendance> GetAttendanceRepo();
-        Task<int> GetTotalUsersAsync();
-        Task<int> GetActiveUsersAsync();
+        Task<int> GetTotalUsersAsync(int? branchFilter);
+        Task<int> GetActiveUsersAsync(int? branchFilter);
         Task<int> GetTotalBranchesAsync();
-        Task<int> GetTodayCheckInsAsync();
+        Task<int> GetTodayCheckInsAsync(int? branchFilter);
         Task<int> GetPendingApprovalsAsync();
     }
 }

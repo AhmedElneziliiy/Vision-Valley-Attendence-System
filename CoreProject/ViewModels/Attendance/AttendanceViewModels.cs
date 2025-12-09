@@ -25,6 +25,10 @@ namespace CoreProject.ViewModels
         public AttendanceStatus AttendanceStatus { get; set; } = AttendanceStatus.Absent;
         public int? MinutesLate { get; set; }
 
+        // Day type indicators
+        public bool IsWeekend { get; set; }
+        public bool IsHoliday { get; set; }
+
         // Computed properties
         public string DurationDisplay => $"{Duration / 60}h {Duration % 60}m";
 
@@ -38,6 +42,8 @@ namespace CoreProject.ViewModels
 
         private string GetStatus()
         {
+            if (IsHoliday) return "Holiday";
+            if (IsWeekend) return "Weekend";
             if (string.IsNullOrEmpty(FirstCheckIn)) return "Absent";
             if (string.IsNullOrEmpty(LastCheckOut)) return "Checked In";
             return "Present";
@@ -45,6 +51,8 @@ namespace CoreProject.ViewModels
 
         private string GetStatusClass()
         {
+            if (IsHoliday) return "bg-info";
+            if (IsWeekend) return "bg-secondary";
             if (string.IsNullOrEmpty(FirstCheckIn)) return "bg-danger";
             if (string.IsNullOrEmpty(LastCheckOut)) return "bg-warning";
             return "bg-success";
@@ -196,12 +204,16 @@ namespace CoreProject.ViewModels
         public int TotalDays { get; set; }
         public int PresentDays { get; set; }
         public int AbsentDays { get; set; }
+        public int WeekendDays { get; set; }
+        public int HolidayDays { get; set; }
+        public int WorkingDays { get; set; } // Total - Weekends - Holidays
         public int TotalMinutes { get; set; }
         public int AverageMinutes { get; set; }
 
         public string TotalHours => $"{TotalMinutes / 60}h {TotalMinutes % 60}m";
         public string AverageHours => $"{AverageMinutes / 60}h {AverageMinutes % 60}m";
         public decimal AttendanceRate => TotalDays > 0 ? ((decimal)PresentDays / TotalDays * 100) : 0;
+        public decimal ActualAttendanceRate => WorkingDays > 0 ? ((decimal)PresentDays / WorkingDays * 100) : 0;
     }
 
     // For reports

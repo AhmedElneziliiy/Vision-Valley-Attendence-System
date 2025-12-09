@@ -26,7 +26,8 @@ namespace CoreProject.Services
             IEnumerable<AttendanceViewModel> attendances,
             DateTime startDate,
             DateTime endDate,
-            string? userName = null)
+            string? userName = null,
+            AttendanceSummaryViewModel? summary = null)
         {
             var document = Document.Create(container =>
             {
@@ -58,57 +59,112 @@ namespace CoreProject.Services
                     });
 
                     // Content
-                    page.Content().PaddingTop(10).Table(table =>
+                    page.Content().PaddingTop(10).Column(contentColumn =>
                     {
-                        // Define columns
-                        table.ColumnsDefinition(columns =>
+                        contentColumn.Item().Table(table =>
                         {
-                            columns.RelativeColumn(2); // User Name
-                            columns.RelativeColumn(1.5f); // Date
-                            columns.RelativeColumn(1); // Day
-                            columns.RelativeColumn(1.2f); // Check In
-                            columns.RelativeColumn(1.2f); // Check Out
-                            columns.RelativeColumn(1); // Duration
-                            columns.RelativeColumn(1.5f); // Status
-                            columns.RelativeColumn(1); // Minutes Late
+                            // Define columns
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(2); // User Name
+                                columns.RelativeColumn(1.5f); // Date
+                                columns.RelativeColumn(1); // Day
+                                columns.RelativeColumn(1.2f); // Check In
+                                columns.RelativeColumn(1.2f); // Check Out
+                                columns.RelativeColumn(1); // Duration
+                                columns.RelativeColumn(1.5f); // Status
+                                columns.RelativeColumn(1); // Minutes Late
+                            });
+
+                            // Header row
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("User Name").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Date").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Day").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Check In").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Check Out").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Duration").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Status").FontColor(Colors.White).Bold();
+                                header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Late/Early").FontColor(Colors.White).Bold();
+                            });
+
+                            // Data rows
+                            var rowIndex = 0;
+                            foreach (var attendance in attendances)
+                            {
+                                var isEvenRow = rowIndex % 2 == 0;
+                                var backgroundColor = isEvenRow ? Colors.Grey.Lighten3 : Colors.White;
+
+                                var durationHours = attendance.Duration > 0 ? $"{attendance.Duration / 60.0:F2}h" : "-";
+                                var minutesLate = attendance.MinutesLate.HasValue ? attendance.MinutesLate.Value.ToString() : "-";
+
+                                // Get status color
+                                var statusColor = GetStatusColor(attendance.Status);
+
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.UserName ?? "Unknown");
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Date.ToString("yyyy-MM-dd"));
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Date.DayOfWeek.ToString().Substring(0, 3));
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.FirstCheckIn ?? "-");
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.LastCheckOut ?? "-");
+                                table.Cell().Background(backgroundColor).Padding(6).Text(durationHours);
+                                table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Status).FontColor(statusColor).Bold();
+                                table.Cell().Background(backgroundColor).Padding(6).Text(minutesLate);
+
+                                rowIndex++;
+                            }
                         });
 
-                        // Header row
-                        table.Header(header =>
+                        // Add summary statistics if provided (for individual user reports)
+                        if (summary != null && !string.IsNullOrEmpty(userName))
                         {
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("User Name").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Date").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Day").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Check In").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Check Out").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Duration").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Status").FontColor(Colors.White).Bold();
-                            header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Late/Early").FontColor(Colors.White).Bold();
-                        });
+                            contentColumn.Item().PaddingTop(20).Column(summaryColumn =>
+                            {
+                                // Summary header
+                                summaryColumn.Item().PaddingBottom(10).Text("Detailed Attendance Statistics")
+                                    .FontSize(14).Bold().FontColor(Colors.Blue.Darken2);
 
-                        // Data rows
-                        var rowIndex = 0;
-                        foreach (var attendance in attendances)
-                        {
-                            var isEvenRow = rowIndex % 2 == 0;
-                            var backgroundColor = isEvenRow ? Colors.Grey.Lighten3 : Colors.White;
+                                // Summary statistics table
+                                summaryColumn.Item().Table(summaryTable =>
+                                {
+                                    summaryTable.ColumnsDefinition(columns =>
+                                    {
+                                        columns.RelativeColumn(2);
+                                        columns.RelativeColumn(1);
+                                        columns.RelativeColumn(2);
+                                        columns.RelativeColumn(1);
+                                    });
 
-                            var durationHours = attendance.Duration > 0 ? $"{attendance.Duration / 60.0:F2}h" : "-";
-                            var minutesLate = attendance.MinutesLate.HasValue ? attendance.MinutesLate.Value.ToString() : "-";
+                                    // Row 1: Total Days and Working Days
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Total Days in Period:").Bold();
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.TotalDays} days");
+                                    summaryTable.Cell().Background(Colors.Blue.Lighten4).Padding(8).Text("Working Days (Should be Present):").Bold().FontColor(Colors.Blue.Darken2);
+                                    summaryTable.Cell().Background(Colors.Blue.Lighten4).Padding(8).Text($"{summary.WorkingDays} days").Bold().FontColor(Colors.Blue.Darken2);
 
-                            // Get status color
-                            var statusColor = GetStatusColor(attendance.Status);
+                                    // Row 2: Present Days and Absent Days
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Days Actually Present:").Bold().FontColor(Colors.Green.Darken2);
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.PresentDays} days").Bold().FontColor(Colors.Green.Darken2);
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Days Absent:").Bold().FontColor(Colors.Red.Darken2);
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.AbsentDays} days").Bold().FontColor(Colors.Red.Darken2);
 
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.UserName ?? "Unknown");
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Date.ToString("yyyy-MM-dd"));
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Date.DayOfWeek.ToString().Substring(0, 3));
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.FirstCheckIn ?? "-");
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.LastCheckOut ?? "-");
-                            table.Cell().Background(backgroundColor).Padding(6).Text(durationHours);
-                            table.Cell().Background(backgroundColor).Padding(6).Text(attendance.Status).FontColor(statusColor).Bold();
-                            table.Cell().Background(backgroundColor).Padding(6).Text(minutesLate);
+                                    // Row 3: Weekend Days and Holiday Days
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Weekend Days:");
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.WeekendDays} days");
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("National Holiday Days:");
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.HolidayDays} days");
 
-                            rowIndex++;
+                                    // Row 4: Total Hours and Attendance Rate
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Total Hours Worked:");
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text(summary.TotalHours);
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text("Actual Attendance Rate:").Bold();
+                                    summaryTable.Cell().Background(Colors.Grey.Lighten3).Padding(8).Text($"{summary.ActualAttendanceRate:F1}%").Bold()
+                                        .FontColor(summary.ActualAttendanceRate >= 90 ? Colors.Green.Darken2 : summary.ActualAttendanceRate >= 75 ? Colors.Orange.Darken2 : Colors.Red.Darken2);
+                                });
+
+                                // Explanation note
+                                summaryColumn.Item().PaddingTop(10).Text("Note: Attendance rate is calculated based on working days only (excluding weekends and national holidays).")
+                                    .FontSize(9).Italic().FontColor(Colors.Grey.Darken1);
+                            });
                         }
                     });
 
@@ -267,6 +323,90 @@ namespace CoreProject.Services
                                 });
                             });
 
+                            // Add Employee Summary Table for date ranges (not for today)
+                            if (!model.IsToday && branch.Users.Any())
+                            {
+                                column.Item().PaddingBottom(10).Column(summaryCol =>
+                                {
+                                    summaryCol.Item().PaddingBottom(5).Text("Employee Attendance Summary")
+                                        .FontSize(11).Bold().FontColor(Colors.Blue.Darken1);
+
+                                    summaryCol.Item().Table(summaryTable =>
+                                    {
+                                        summaryTable.ColumnsDefinition(columns =>
+                                        {
+                                            columns.RelativeColumn(2); // Employee
+                                            columns.RelativeColumn(0.8f); // Total Days
+                                            columns.RelativeColumn(1); // Working Days
+                                            columns.RelativeColumn(0.8f); // Present
+                                            columns.RelativeColumn(0.8f); // Absent
+                                            columns.RelativeColumn(0.8f); // Weekends
+                                            columns.RelativeColumn(0.8f); // Holidays
+                                            columns.RelativeColumn(1); // Total Hours
+                                            columns.RelativeColumn(0.8f); // Rate
+                                        });
+
+                                        // Header
+                                        summaryTable.Header(header =>
+                                        {
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Employee").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Total").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Working").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Green.Darken2).Padding(5).Text("Present").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Red.Darken2).Padding(5).Text("Absent").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Weekends").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Holidays").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Hours").FontColor(Colors.White).Bold().FontSize(8);
+                                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Rate").FontColor(Colors.White).Bold().FontSize(8);
+                                        });
+
+                                        // Calculate date range values
+                                        var totalDays = (model.EndDate - model.StartDate).Days + 1;
+
+                                        // Data rows
+                                        var rowIdx = 0;
+                                        foreach (var user in branch.Users)
+                                        {
+                                            var isEven = rowIdx % 2 == 0;
+                                            var bgColor = isEven ? Colors.Grey.Lighten3 : Colors.White;
+
+                                            // Parse present and absent days
+                                            var presentStr = user.FirstCheckIn?.Replace(" days", "") ?? "0";
+                                            var absentStr = user.LastCheckOut?.Replace(" days", "") ?? "0";
+                                            var presentInt = int.TryParse(presentStr, out int p) ? p : 0;
+                                            var absentInt = int.TryParse(absentStr, out int a) ? a : 0;
+                                            var workingDays = presentInt + absentInt;
+
+                                            // Calculate weekends
+                                            var weekendDays = 0;
+                                            for (var d = model.StartDate; d <= model.EndDate; d = d.AddDays(1))
+                                            {
+                                                if (d.DayOfWeek == DayOfWeek.Friday || d.DayOfWeek == DayOfWeek.Saturday)
+                                                    weekendDays++;
+                                            }
+
+                                            var holidayDays = totalDays - workingDays - weekendDays;
+                                            var rate = workingDays > 0 ? (decimal)presentInt / workingDays * 100 : 0;
+                                            var hours = user.Duration / 60;
+                                            var minutes = user.Duration % 60;
+
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text($"{user.UserName}\n{user.Department}").FontSize(7);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text(totalDays.ToString()).FontSize(8);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text(workingDays.ToString()).FontSize(8).Bold();
+                                            summaryTable.Cell().Background(Colors.Green.Lighten4).Padding(4).Text(presentInt.ToString()).FontSize(8).Bold().FontColor(Colors.Green.Darken2);
+                                            summaryTable.Cell().Background(Colors.Red.Lighten4).Padding(4).Text(absentInt.ToString()).FontSize(8).Bold().FontColor(Colors.Red.Darken2);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text(weekendDays.ToString()).FontSize(8);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text(holidayDays.ToString()).FontSize(8);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text($"{hours}h {minutes}m").FontSize(7);
+                                            summaryTable.Cell().Background(bgColor).Padding(4).Text($"{rate:F1}%").FontSize(8).Bold()
+                                                .FontColor(rate >= 90 ? Colors.Green.Darken2 : rate >= 75 ? Colors.Orange.Darken2 : Colors.Red.Darken2);
+
+                                            rowIdx++;
+                                        }
+                                    });
+                                });
+                            }
+
                             // Users table for this branch
                             column.Item().PaddingBottom(20).Table(table =>
                             {
@@ -276,10 +416,20 @@ namespace CoreProject.Services
                                     columns.RelativeColumn(2.5f); // User Name
                                     columns.RelativeColumn(2); // Email
                                     columns.RelativeColumn(1.5f); // Department
-                                    columns.RelativeColumn(1.2f); // Check In
-                                    columns.RelativeColumn(1.2f); // Check Out
-                                    columns.RelativeColumn(1); // Duration
-                                    columns.RelativeColumn(1.5f); // Status
+
+                                    if (model.IsToday)
+                                    {
+                                        columns.RelativeColumn(1.2f); // Check In
+                                        columns.RelativeColumn(1.2f); // Check Out
+                                        columns.RelativeColumn(1); // Duration
+                                        columns.RelativeColumn(1.5f); // Status
+                                    }
+                                    else
+                                    {
+                                        columns.RelativeColumn(1.2f); // Days Present
+                                        columns.RelativeColumn(1.2f); // Days Absent
+                                        columns.RelativeColumn(1.2f); // Total Duration
+                                    }
                                 });
 
                                 // Header row
@@ -288,10 +438,20 @@ namespace CoreProject.Services
                                     header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("User Name").FontColor(Colors.White).Bold().FontSize(9);
                                     header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Email").FontColor(Colors.White).Bold().FontSize(9);
                                     header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Department").FontColor(Colors.White).Bold().FontSize(9);
-                                    header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Check In").FontColor(Colors.White).Bold().FontSize(9);
-                                    header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Check Out").FontColor(Colors.White).Bold().FontSize(9);
-                                    header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Duration").FontColor(Colors.White).Bold().FontSize(9);
-                                    header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Status").FontColor(Colors.White).Bold().FontSize(9);
+
+                                    if (model.IsToday)
+                                    {
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Check In").FontColor(Colors.White).Bold().FontSize(9);
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Check Out").FontColor(Colors.White).Bold().FontSize(9);
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Duration").FontColor(Colors.White).Bold().FontSize(9);
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Status").FontColor(Colors.White).Bold().FontSize(9);
+                                    }
+                                    else
+                                    {
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Days Present").FontColor(Colors.White).Bold().FontSize(9);
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Days Absent").FontColor(Colors.White).Bold().FontSize(9);
+                                        header.Cell().Background(Colors.Blue.Darken2).Padding(6).Text("Total Duration").FontColor(Colors.White).Bold().FontSize(9);
+                                    }
                                 });
 
                                 // Data rows
@@ -307,10 +467,20 @@ namespace CoreProject.Services
                                     table.Cell().Background(backgroundColor).Padding(5).Text(user.UserName).FontSize(9);
                                     table.Cell().Background(backgroundColor).Padding(5).Text(user.Email).FontSize(8);
                                     table.Cell().Background(backgroundColor).Padding(5).Text(user.Department).FontSize(9);
-                                    table.Cell().Background(backgroundColor).Padding(5).Text(user.FirstCheckIn ?? "-").FontSize(9);
-                                    table.Cell().Background(backgroundColor).Padding(5).Text(user.LastCheckOut ?? "-").FontSize(9);
-                                    table.Cell().Background(backgroundColor).Padding(5).Text(durationHours).FontSize(9);
-                                    table.Cell().Background(backgroundColor).Padding(5).Text(user.Status).FontColor(statusColor).Bold().FontSize(9);
+
+                                    if (model.IsToday)
+                                    {
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(user.FirstCheckIn ?? "-").FontSize(9);
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(user.LastCheckOut ?? "-").FontSize(9);
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(durationHours).FontSize(9);
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(user.Status).FontColor(statusColor).Bold().FontSize(9);
+                                    }
+                                    else
+                                    {
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(user.FirstCheckIn ?? "0 days").FontSize(9);
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(user.LastCheckOut ?? "0 days").FontSize(9);
+                                        table.Cell().Background(backgroundColor).Padding(5).Text(durationHours).FontSize(9);
+                                    }
 
                                     rowIndex++;
                                 }

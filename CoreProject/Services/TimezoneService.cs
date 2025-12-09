@@ -44,8 +44,8 @@ namespace CoreProject.Services
     public class TimezoneService : ITimezoneService
     {
         /// <summary>
-        /// Converts timezone integer (0-4) to IANA timezone string
-        /// 0 = UTC, 1 = Asia/Dubai, 2 = Africa/Cairo, 3 = Europe/London, 4 = America/New_York
+        /// Converts timezone integer (0-5) to IANA timezone string
+        /// 0 = UTC, 1 = Asia/Dubai, 2 = Africa/Cairo, 3 = Europe/London, 4 = America/New_York, 5 = Asia/Riyadh
         /// </summary>
         public string GetTimezoneString(int timezoneValue)
         {
@@ -56,6 +56,7 @@ namespace CoreProject.Services
                 2 => "Egypt Standard Time",    // Africa/Cairo (Egypt)
                 3 => "GMT Standard Time",      // Europe/London (UK)
                 4 => "Eastern Standard Time",  // America/New_York (EST)
+                5 => "Arab Standard Time",     // Asia/Riyadh (Saudi Arabia - UTC+3)
                 _ => "UTC"
             };
         }

@@ -24,7 +24,8 @@ namespace MvcCoreProject.Controllers
         {
             try
             {
-                var stats = await _dashboardService.GetDashboardStatsAsync();
+                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var stats = await _dashboardService.GetDashboardStatsAsync(userId);
 
                 // Set user-friendly welcome message
                 var userName = User.Identity?.Name ?? "User";
@@ -46,7 +47,8 @@ namespace MvcCoreProject.Controllers
         {
             try
             {
-                var stats = await _dashboardService.GetDashboardStatsAsync();
+                var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var stats = await _dashboardService.GetDashboardStatsAsync(userId);
                 return Json(new { success = true, data = stats });
             }
             catch (Exception ex)

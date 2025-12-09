@@ -113,14 +113,17 @@
                 </a>
                 <ul class="submenu">
                     <li><a asp-controller="Attendance" asp-action="Index">My Attendance</a></li>
-                    <li><a asp-controller="Attendance" asp-action="CheckIn">Check In/Out</a></li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li><a asp-controller="Attendance" asp-action="CheckIn">Check In/Out</a></li>
+                    }
                     @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Manager"))
                     {
                         <li><a asp-controller="Attendance" asp-action="TeamAttendance">Team Attendance</a></li>
                         <li><a asp-controller="Attendance" asp-action="BranchAttendance">Branch Attendance</a></li>
                         <li><a asp-controller="Attendance" asp-action="Reports">Reports</a></li>
                     }
-                    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                    @if (User.IsInRole("Admin"))
                     {
                         <li><a asp-controller="ManualAttendance" asp-action="Index"><i class="bi bi-person-check me-1"></i>Manual Attendance</a></li>
                     }

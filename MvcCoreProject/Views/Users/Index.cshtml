@@ -236,7 +236,7 @@
                                             onclick="confirmResetPassword(@user.Id, '@user.DisplayName')">
                                         <i class="bi bi-key"></i>
                                     </button>
-                                    @if (User.IsInRole("Admin"))
+                                    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
                                     {
                                         <button class="btn-icon btn-delete"
                                                 title="Delete User"

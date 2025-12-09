@@ -184,6 +184,84 @@
         </div>
     </div>
 
+    <!-- Employee Summary Table (for group reports) -->
+    @if (!selectedUserId.HasValue && Model.Attendances != null && Model.Attendances.Any())
+    {
+        var employeeSummaries = Model.Attendances
+            .GroupBy(a => new { a.UserId, a.UserName })
+            .Select(g => new
+            {
+                UserId = g.Key.UserId,
+                UserName = g.Key.UserName,
+                TotalDays = g.Count(),
+                PresentDays = g.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday),
+                AbsentDays = g.Count(a => string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday),
+                WeekendDays = g.Count(a => a.IsWeekend),
+                HolidayDays = g.Count(a => a.IsHoliday),
+                WorkingDays = g.Count(a => !a.IsWeekend && !a.IsHoliday),
+                TotalHours = g.Where(a => !string.IsNullOrEmpty(a.FirstCheckIn)).Sum(a => a.Duration) / 60.0,
+                AttendanceRate = g.Count(a => !a.IsWeekend && !a.IsHoliday) > 0
+                    ? (g.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday) * 100.0) / g.Count(a => !a.IsWeekend && !a.IsHoliday)
+                    : 0
+            })
+            .OrderBy(s => s.UserName)
+            .ToList();
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0"><i class="bi bi-people-fill"></i> Employee Attendance Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Employee</th>
+                                <th class="text-center">Total Days</th>
+                                <th class="text-center">Working Days</th>
+                                <th class="text-center bg-success-subtle">Present Days</th>
+                                <th class="text-center bg-danger-subtle">Absent Days</th>
+                                <th class="text-center">Weekends</th>
+                                <th class="text-center">Holidays</th>
+                                <th class="text-center">Total Hours</th>
+                                <th class="text-center">Attendance Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var summary in employeeSummaries)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2">
+                                                @summary.UserName.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <strong>@summary.UserName</strong>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@summary.TotalDays</td>
+                                    <td class="text-center"><strong class="text-primary">@summary.WorkingDays</strong></td>
+                                    <td class="text-center"><strong class="text-success">@summary.PresentDays</strong></td>
+                                    <td class="text-center"><strong class="text-danger">@summary.AbsentDays</strong></td>
+                                    <td class="text-center text-secondary">@summary.WeekendDays</td>
+                                    <td class="text-center text-info">@summary.HolidayDays</td>
+                                    <td class="text-center">@summary.TotalHours.ToString("F1")h</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-@(summary.AttendanceRate >= 90 ? "success" : summary.AttendanceRate >= 75 ? "warning" : "danger")">
+                                            @summary.AttendanceRate.ToString("F1")%
+                                        </span>
+                                        <br />
+                                        <small class="text-muted">@summary.PresentDays/@summary.WorkingDays</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- Detailed Records Table -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-bottom">

@@ -61,7 +61,7 @@ namespace MvcCoreProject.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Create()
         {
             try
@@ -79,7 +79,7 @@ namespace MvcCoreProject.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Create(TimetableCreateViewModel model)
         {
             if (ModelState.IsValid)
@@ -116,7 +116,7 @@ namespace MvcCoreProject.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Edit(int id)
         {
             try
@@ -140,7 +140,7 @@ namespace MvcCoreProject.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Edit(TimetableEditViewModel model)
         {
             if (ModelState.IsValid)
@@ -183,7 +183,7 @@ namespace MvcCoreProject.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -210,7 +210,7 @@ namespace MvcCoreProject.Controllers
         // Configuration Management
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> AddConfiguration(int timetableId, int configurationId, string value)
         {
             try
@@ -237,7 +237,7 @@ namespace MvcCoreProject.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> UpdateConfiguration(int timetableConfigurationId, string value)
         {
             try
@@ -264,7 +264,7 @@ namespace MvcCoreProject.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> RemoveConfiguration(int timetableConfigurationId)
         {
             try

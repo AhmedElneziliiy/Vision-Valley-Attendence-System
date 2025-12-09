@@ -9,6 +9,6 @@ namespace CoreProject.Services.IService
 {
     public interface IDashboardService
     {
-        Task<DashboardViewModel> GetDashboardStatsAsync();
+        Task<DashboardViewModel> GetDashboardStatsAsync(int userId);
     }
 }

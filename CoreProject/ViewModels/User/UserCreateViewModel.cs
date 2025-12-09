@@ -13,8 +13,8 @@ namespace CoreProject.ViewModels
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
 
-        [Required, MinLength(6)]
-        public string Password { get; set; } = null!;
+        [MinLength(6)]
+        public string? Password { get; set; }
 
         [Required]
         public string DisplayName { get; set; } = null!;

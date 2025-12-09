@@ -72,6 +72,7 @@ namespace MvcCoreProject.Controllers
 
         // GET: Attendance/CheckIn - Check In/Out page
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CheckIn()
         {
             try
@@ -112,6 +113,7 @@ namespace MvcCoreProject.Controllers
         // POST: Attendance/PerformCheckIn
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PerformCheckIn()
         {
             try
@@ -542,9 +544,9 @@ namespace MvcCoreProject.Controllers
                     userName = user?.DisplayName;
                 }
 
-                // Generate PDF
+                // Generate PDF with summary statistics
                 var pdfService = new CoreProject.Services.PdfExportService();
-                var pdfBytes = pdfService.GenerateAttendanceReportPdf(report.Attendances, start, end, userName);
+                var pdfBytes = pdfService.GenerateAttendanceReportPdf(report.Attendances, start, end, userName, report.Summary);
 
                 var fileName = $"Attendance_Report_{start:yyyyMMdd}_{end:yyyyMMdd}.pdf";
 

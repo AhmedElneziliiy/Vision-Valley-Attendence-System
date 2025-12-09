@@ -407,51 +407,57 @@ namespace CoreProject.Services
         {
             try
             {
+                List<int> userIds;
                 IEnumerable<Attendance> attendances;
 
                 if (userId.HasValue)
                 {
+                    userIds = new List<int> { userId.Value };
                     attendances = await _attendanceRepo.GetUserAttendanceByDateRangeAsync(userId.Value, startDate, endDate);
                 }
                 else
                 {
-                    var teamUserIds = await GetTeamUserIdsAsync(currentUser);
-                    attendances = await _attendanceRepo.GetTeamAttendanceByDateRangeAsync(teamUserIds, startDate, endDate);
+                    userIds = await GetTeamUserIdsAsync(currentUser);
+                    attendances = await _attendanceRepo.GetTeamAttendanceByDateRangeAsync(userIds, startDate, endDate);
                 }
 
                 var attendanceList = attendances.ToList();
 
-                // Calculate summary
-                var summary = new AttendanceSummaryViewModel
+                // Get users with their branch info (for national holidays)
+                var users = await _context.Users
+                    .IgnoreQueryFilters()
+                    .Include(u => u.Branch)
+                    .Where(u => userIds.Contains(u.Id) && u.IsActive)
+                    .ToListAsync();
+
+                var allCompleteAttendances = new List<AttendanceViewModel>();
+
+                // Generate complete attendance for each user
+                foreach (var user in users)
                 {
-                    TotalDays = (endDate.Date - startDate.Date).Days + 1,
-                    PresentDays = attendanceList.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn)),
-                    AbsentDays = 0,
-                    TotalMinutes = attendanceList.Sum(a => a.Duration),
-                    AverageMinutes = attendanceList.Any() ? (int)attendanceList.Average(a => a.Duration) : 0
-                };
-                summary.AbsentDays = summary.TotalDays - summary.PresentDays;
+                    var userAttendances = attendanceList.Where(a => a.UserID == user.Id).ToList();
+                    var nationalHolidays = ParseNationalHolidays(user.Branch?.NationalHolidays);
+
+                    var completeUserAttendances = GenerateCompleteDateRangeAttendance(
+                        user.Id,
+                        user.DisplayName,
+                        startDate,
+                        endDate,
+                        userAttendances,
+                        nationalHolidays);
+
+                    allCompleteAttendances.AddRange(completeUserAttendances);
+                }
+
+                // Calculate overall summary
+                var summary = CalculateDetailedSummary(allCompleteAttendances);
 
                 return new AttendanceReportViewModel
                 {
                     StartDate = startDate,
                     EndDate = endDate,
                     Summary = summary,
-                    Attendances = attendanceList.Select(a => new AttendanceViewModel
-                    {
-                        Id = a.ID,
-                        UserId = a.UserID,
-                        UserName = a.User?.DisplayName ?? "Unknown User",
-                        Date = a.Date,
-                        FirstCheckIn = a.FirstCheckIn,
-                        LastCheckOut = a.LastCheckOut,
-                        Duration = a.Duration,
-                        HRPosted = a.HRPosted,
-                        HRUserName = a.HRUser?.DisplayName,
-                        HRPostedDate = a.HRPostedDate,
-                        AttendanceStatus = a.Status,
-                        MinutesLate = a.MinutesLate
-                    }).ToList()
+                    Attendances = allCompleteAttendances.OrderBy(a => a.UserName).ThenBy(a => a.Date).ToList()
                 };
             }
             catch (Exception ex)
@@ -481,37 +487,32 @@ namespace CoreProject.Services
                     .Include(u => u.Branch)
                     .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
-                // Calculate summary
-                var summary = new AttendanceSummaryViewModel
+                if (user == null)
                 {
-                    TotalDays = (endDate.Date - startDate.Date).Days + 1,
-                    PresentDays = attendanceList.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn)),
-                    AbsentDays = 0,
-                    TotalMinutes = attendanceList.Sum(a => a.Duration),
-                    AverageMinutes = attendanceList.Any() ? (int)attendanceList.Average(a => a.Duration) : 0
-                };
-                summary.AbsentDays = summary.TotalDays - summary.PresentDays;
+                    throw new Exception($"User {userId} not found");
+                }
+
+                // Get national holidays for the user's branch
+                var nationalHolidays = ParseNationalHolidays(user.Branch?.NationalHolidays);
+
+                // Generate complete date range with all days
+                var completeAttendances = GenerateCompleteDateRangeAttendance(
+                    userId,
+                    user.DisplayName,
+                    startDate,
+                    endDate,
+                    attendanceList,
+                    nationalHolidays);
+
+                // Calculate detailed summary
+                var summary = CalculateDetailedSummary(completeAttendances);
 
                 return new AttendanceReportViewModel
                 {
                     StartDate = startDate,
                     EndDate = endDate,
                     Summary = summary,
-                    Attendances = attendanceList.Select(a => new AttendanceViewModel
-                    {
-                        Id = a.ID,
-                        UserId = a.UserID,
-                        UserName = user?.DisplayName ?? a.User.DisplayName,
-                        Date = a.Date,
-                        FirstCheckIn = a.FirstCheckIn,
-                        LastCheckOut = a.LastCheckOut,
-                        Duration = a.Duration,
-                        HRPosted = a.HRPosted,
-                        HRUserName = a.HRUser?.DisplayName,
-                        HRPostedDate = a.HRPostedDate,
-                        AttendanceStatus = a.Status,
-                        MinutesLate = a.MinutesLate
-                    }).ToList()
+                    Attendances = completeAttendances
                 };
             }
             catch (Exception ex)
@@ -828,33 +829,49 @@ namespace CoreProject.Services
                     }
                     else
                     {
-                        // Date range view - only show users who have attendance records
-                        var groupedByUser = attendances.GroupBy(a => a.UserID);
+                        // Date range view - show all users with complete date range
+                        var nationalHolidays = ParseNationalHolidays(branch.NationalHolidays);
 
-                        foreach (var userGroup in groupedByUser)
+                        foreach (var branchUser in activeUsers)
                         {
-                            var firstAttendance = userGroup.First();
-                            var totalDuration = userGroup.Sum(a => a.Duration);
-                            var presentDays = userGroup.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn));
+                            var userAttendances = attendances.Where(a => a.UserID == branchUser.Id).ToList();
+
+                            // Generate complete attendance range for this user
+                            var completeAttendances = GenerateCompleteDateRangeAttendance(
+                                branchUser.Id,
+                                branchUser.DisplayName,
+                                start,
+                                end,
+                                userAttendances,
+                                nationalHolidays);
+
+                            // Calculate statistics for this user
+                            var presentDays = completeAttendances.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday);
+                            var absentDays = completeAttendances.Count(a => string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday);
+                            var weekendDays = completeAttendances.Count(a => a.IsWeekend);
+                            var holidayDays = completeAttendances.Count(a => a.IsHoliday);
+                            var totalDuration = userAttendances.Sum(a => a.Duration);
 
                             var userData = new UserAttendanceData
                             {
-                                UserId = firstAttendance.UserID,
-                                UserName = firstAttendance.User.DisplayName,
-                                Email = firstAttendance.User.Email ?? "",
-                                Department = firstAttendance.User.Department?.Name ?? "N/A",
+                                UserId = branchUser.Id,
+                                UserName = branchUser.DisplayName,
+                                Email = branchUser.Email ?? "",
+                                Department = branchUser.Department?.Name ?? "N/A",
                                 FirstCheckIn = $"{presentDays} days",
-                                LastCheckOut = "-",
+                                LastCheckOut = $"{absentDays} days",
                                 Duration = totalDuration,
-                                Status = "Present",
+                                Status = presentDays > 0 ? "Present" : "Absent",
                                 HRPosted = false
                             };
 
                             branchData.Users.Add(userData);
-                            branchData.PresentUsers++;
-                        }
 
-                        branchData.AbsentUsers = branchData.TotalUsers - branchData.PresentUsers;
+                            if (presentDays > 0)
+                                branchData.PresentUsers++;
+                            else
+                                branchData.AbsentUsers++;
+                        }
                     }
 
                     // Sort users by name
@@ -1341,6 +1358,131 @@ namespace CoreProject.Services
                 _logger.LogError(ex, "Error performing manual check-out for attendance {AttendanceId}", attendanceId);
                 return (false, "An error occurred while recording check-out.");
             }
+        }
+
+        #endregion
+
+        #region Helper Methods for Complete Date Range Reports
+
+        private bool IsWeekend(DateTime date)
+        {
+            return date.DayOfWeek == DayOfWeek.Friday || date.DayOfWeek == DayOfWeek.Saturday;
+        }
+
+        private bool IsNationalHoliday(DateTime date, List<DateTime> nationalHolidays)
+        {
+            return nationalHolidays.Any(h => h.Date == date.Date);
+        }
+
+        private List<DateTime> ParseNationalHolidays(string? nationalHolidaysJson)
+        {
+            if (string.IsNullOrWhiteSpace(nationalHolidaysJson))
+                return new List<DateTime>();
+
+            try
+            {
+                var holidays = System.Text.Json.JsonSerializer.Deserialize<List<string>>(nationalHolidaysJson);
+                return holidays?
+                    .Select(h => DateTime.Parse(h))
+                    .ToList() ?? new List<DateTime>();
+            }
+            catch
+            {
+                return new List<DateTime>();
+            }
+        }
+
+        private List<AttendanceViewModel> GenerateCompleteDateRangeAttendance(
+            int userId,
+            string userName,
+            DateTime startDate,
+            DateTime endDate,
+            List<Attendance> existingAttendance,
+            List<DateTime> nationalHolidays)
+        {
+            var result = new List<AttendanceViewModel>();
+            var attendanceDict = existingAttendance.ToDictionary(a => a.Date.Date);
+
+            for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+            {
+                var isWeekend = IsWeekend(date);
+                var isHoliday = IsNationalHoliday(date, nationalHolidays);
+
+                if (attendanceDict.TryGetValue(date, out var attendance))
+                {
+                    // User has attendance record for this day
+                    result.Add(new AttendanceViewModel
+                    {
+                        Id = attendance.ID,
+                        UserId = userId,
+                        UserName = userName,
+                        Date = date,
+                        FirstCheckIn = attendance.FirstCheckIn,
+                        LastCheckOut = attendance.LastCheckOut,
+                        Duration = attendance.Duration,
+                        HRPosted = attendance.HRPosted,
+                        HRUserName = attendance.HRUser?.DisplayName,
+                        HRPostedDate = attendance.HRPostedDate,
+                        AttendanceStatus = attendance.Status,
+                        MinutesLate = attendance.MinutesLate,
+                        IsWeekend = isWeekend,
+                        IsHoliday = isHoliday
+                    });
+                }
+                else
+                {
+                    // No attendance record - create absent/weekend/holiday entry
+                    result.Add(new AttendanceViewModel
+                    {
+                        Id = 0,
+                        UserId = userId,
+                        UserName = userName,
+                        Date = date,
+                        FirstCheckIn = null,
+                        LastCheckOut = null,
+                        Duration = 0,
+                        HRPosted = false,
+                        AttendanceStatus = AttendanceStatus.Absent,
+                        IsWeekend = isWeekend,
+                        IsHoliday = isHoliday
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        private AttendanceSummaryViewModel CalculateDetailedSummary(List<AttendanceViewModel> attendances)
+        {
+            var totalDays = attendances.Count;
+            var weekendDays = attendances.Count(a => a.IsWeekend);
+            var holidayDays = attendances.Count(a => a.IsHoliday);
+            var workingDays = totalDays - weekendDays - holidayDays;
+
+            var presentDays = attendances.Count(a => !string.IsNullOrEmpty(a.FirstCheckIn) && !a.IsWeekend && !a.IsHoliday);
+            var absentDays = workingDays - presentDays;
+
+            var totalMinutes = attendances
+                .Where(a => !string.IsNullOrEmpty(a.FirstCheckIn))
+                .Sum(a => a.Duration);
+
+            var averageMinutes = attendances
+                .Where(a => !string.IsNullOrEmpty(a.FirstCheckIn))
+                .Any()
+                    ? (int)attendances.Where(a => !string.IsNullOrEmpty(a.FirstCheckIn)).Average(a => a.Duration)
+                    : 0;
+
+            return new AttendanceSummaryViewModel
+            {
+                TotalDays = totalDays,
+                PresentDays = presentDays,
+                AbsentDays = absentDays,
+                WeekendDays = weekendDays,
+                HolidayDays = holidayDays,
+                WorkingDays = workingDays,
+                TotalMinutes = totalMinutes,
+                AverageMinutes = averageMinutes
+            };
         }
 
         #endregion

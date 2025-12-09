@@ -189,7 +189,8 @@ namespace CoreProject.Services
                     new SelectListItem { Value = "1", Text = "Asia/Dubai (UAE)" },
                     new SelectListItem { Value = "2", Text = "Africa/Cairo (Egypt)" },
                     new SelectListItem { Value = "3", Text = "Europe/London (UK)" },
-                    new SelectListItem { Value = "4", Text = "America/New_York (EST)" }
+                    new SelectListItem { Value = "4", Text = "America/New_York (EST)" },
+                    new SelectListItem { Value = "5", Text = "Asia/Riyadh (Saudi Arabia)" }
                 };
 
                 return new BranchCreateViewModel
@@ -302,7 +303,8 @@ namespace CoreProject.Services
                     new SelectListItem { Value = "1", Text = "Asia/Dubai (UAE)" },
                     new SelectListItem { Value = "2", Text = "Africa/Cairo (Egypt)" },
                     new SelectListItem { Value = "3", Text = "Europe/London (UK)" },
-                    new SelectListItem { Value = "4", Text = "America/New_York (EST)" }
+                    new SelectListItem { Value = "4", Text = "America/New_York (EST)" },
+                    new SelectListItem { Value = "5", Text = "Asia/Riyadh (Saudi Arabia)" }
                 };
 
                 return new BranchEditViewModel

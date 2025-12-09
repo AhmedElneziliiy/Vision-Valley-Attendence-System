@@ -1,6 +1,8 @@
-﻿using CoreProject.Repositories.Interfaces;
+﻿using CoreProject.Models;
+using CoreProject.Repositories.Interfaces;
 using CoreProject.Services.IService;
 using CoreProject.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,36 +16,76 @@ namespace CoreProject.Services
     {
         private readonly IDashboardRepository _dashboardRepo;
         private readonly ILogger<DashboardService> _logger;
+        private readonly IRepository<ApplicationUser> _userRepo;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public DashboardService(
             IDashboardRepository dashboardRepo,
+            IRepository<ApplicationUser> userRepo,
+            UserManager<ApplicationUser> userManager,
             ILogger<DashboardService> logger)
         {
             _dashboardRepo = dashboardRepo;
+            _userRepo = userRepo;
+            _userManager = userManager;
             _logger = logger;
         }
 
-        public async Task<DashboardViewModel> GetDashboardStatsAsync()
+        public async Task<DashboardViewModel> GetDashboardStatsAsync(int userId)
         {
             try
             {
-                _logger.LogInformation("Fetching dashboard statistics");
+                _logger.LogInformation("Fetching dashboard statistics for user {UserId}", userId);
+
+                // Get user's branch info and roles
+                var user = await _userRepo.Query()
+                    .Include(u => u.Branch)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    throw new Exception($"User {userId} not found");
+                }
+
+                // Check if user is Admin
+                var roles = await _userManager.GetRolesAsync(user);
+                bool isAdmin = roles.Contains("Admin");
+
+                // Admin: Always see all data (no filter)
+                // HR/Others in main branch: See all data (no filter)
+                // HR/Others in specific branch: See only their branch data
+                int? branchFilter = null;
+
+                // Only apply filter if NOT Admin AND NOT in main branch
+                if (!isAdmin && user.Branch != null && !user.Branch.IsMainBranch)
+                {
+                    branchFilter = user.BranchID;
+                    _logger.LogInformation("Non-admin, non-main-branch user - filtering by branch: {BranchId}", user.BranchID);
+                }
+                else if (isAdmin)
+                {
+                    _logger.LogInformation("Admin user - showing all data");
+                }
+                else
+                {
+                    _logger.LogInformation("Main branch user - showing all data");
+                }
 
                 var model = new DashboardViewModel
                 {
-                    TotalUsers = await _dashboardRepo.GetTotalUsersAsync(),
-                    ActiveUsers = await _dashboardRepo.GetActiveUsersAsync(),
+                    TotalUsers = await _dashboardRepo.GetTotalUsersAsync(branchFilter),
+                    ActiveUsers = await _dashboardRepo.GetActiveUsersAsync(branchFilter),
                     TotalBranches = await _dashboardRepo.GetTotalBranchesAsync(),
-                    TodayCheckIns = await _dashboardRepo.GetTodayCheckInsAsync(),
+                    TodayCheckIns = await _dashboardRepo.GetTodayCheckInsAsync(branchFilter),
                     PendingApprovals = await _dashboardRepo.GetPendingApprovalsAsync()
                 };
 
-                // Load chart data
-                await LoadMonthlyCheckInsAsync(model);
-                await LoadDepartmentAttendanceAsync(model);
-                await LoadRecentActivitiesAsync(model);
+                // Load chart data with branch filter
+                await LoadMonthlyCheckInsAsync(model, branchFilter);
+                await LoadDepartmentAttendanceAsync(model, branchFilter);
+                await LoadRecentActivitiesAsync(model, branchFilter);
 
-                _logger.LogInformation("Dashboard statistics loaded successfully");
+                _logger.LogInformation("Dashboard statistics loaded successfully for user {UserId}", userId);
                 return model;
             }
             catch (Exception ex)
@@ -53,10 +95,16 @@ namespace CoreProject.Services
             }
         }
 
-        private async Task LoadMonthlyCheckInsAsync(DashboardViewModel model)
+        private async Task LoadMonthlyCheckInsAsync(DashboardViewModel model, int? branchFilter)
         {
             var attendanceQuery = _dashboardRepo.GetAttendanceRepo().Query();
             var sixMonthsAgo = DateTime.Today.AddMonths(-5).Date;
+
+            // Apply branch filter if specified
+            if (branchFilter.HasValue)
+            {
+                attendanceQuery = attendanceQuery.Where(a => a.User!.BranchID == branchFilter.Value);
+            }
 
             var monthlyData = await attendanceQuery
                 .Where(a => a.Date >= sixMonthsAgo)
@@ -85,10 +133,16 @@ namespace CoreProject.Services
                 .ToList();
         }
 
-        private async Task LoadDepartmentAttendanceAsync(DashboardViewModel model)
+        private async Task LoadDepartmentAttendanceAsync(DashboardViewModel model, int? branchFilter)
         {
             var attendanceQuery = _dashboardRepo.GetAttendanceRepo().Query();
             var today = DateTime.Today;
+
+            // Apply branch filter if specified
+            if (branchFilter.HasValue)
+            {
+                attendanceQuery = attendanceQuery.Where(a => a.User!.BranchID == branchFilter.Value);
+            }
 
             var departmentData = await attendanceQuery
                 .Include(a => a.User)
@@ -103,7 +157,7 @@ namespace CoreProject.Services
                 {
                     Department = g.Key.DeptName,
                     Present = g.Count(),
-                    Total = g.First().User!.Department!.Users.Count(u => u.IsActive)
+                    Total = g.First().User!.Department!.Users.Count(u => u.IsActive && (!branchFilter.HasValue || u.BranchID == branchFilter.Value))
                 })
                 .ToListAsync();
 
@@ -119,9 +173,15 @@ namespace CoreProject.Services
                 .ToList();
         }
 
-        private async Task LoadRecentActivitiesAsync(DashboardViewModel model)
+        private async Task LoadRecentActivitiesAsync(DashboardViewModel model, int? branchFilter)
         {
             var attendanceQuery = _dashboardRepo.GetAttendanceRepo().Query();
+
+            // Apply branch filter if specified
+            if (branchFilter.HasValue)
+            {
+                attendanceQuery = attendanceQuery.Where(a => a.User!.BranchID == branchFilter.Value);
+            }
 
             var recentData = await attendanceQuery
                 .Include(a => a.User)

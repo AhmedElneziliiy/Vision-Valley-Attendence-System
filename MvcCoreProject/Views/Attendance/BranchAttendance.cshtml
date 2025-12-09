@@ -196,6 +196,79 @@
                     </div>
                 </div>
 
+                @if (!Model.IsToday)
+                {
+                    <!-- Employee Summary Table for Date Range -->
+                    <div style="background: #ffffff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #dee2e6;">
+                        <div>
+                            <h6 style="margin-bottom: 1rem; color: #212529;"><i class="bi bi-people-fill"></i> Employee Attendance Summary</h6>
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; font-size: 0.9rem; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #0d6efd;">
+                                            <th style="color: #ffffff; padding: 8px; text-align: left; border-bottom: 2px solid #0a58ca;">Employee</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Total Days</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Working Days</th>
+                                            <th style="background: #198754; color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #146c43;">Present</th>
+                                            <th style="background: #dc3545; color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #b02a37;">Absent</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Weekends</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Holidays</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Total Hours</th>
+                                            <th style="color: #ffffff; padding: 8px; text-align: center; border-bottom: 2px solid #0a58ca;">Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var totalDays = (Model.EndDate - Model.StartDate).Days + 1;
+                                        }
+                                        @foreach (var user in branch.Users)
+                                        {
+                                            var presentDays = user.FirstCheckIn.Replace(" days", "");
+                                            var absentDays = user.LastCheckOut.Replace(" days", "");
+                                            var presentInt = int.TryParse(presentDays, out int p) ? p : 0;
+                                            var absentInt = int.TryParse(absentDays, out int a) ? a : 0;
+                                            var workingDays = presentInt + absentInt;
+                                            var weekendDays = 0;
+                                            var holidayDays = 0;
+                                            for (var d = Model.StartDate; d <= Model.EndDate; d = d.AddDays(1))
+                                            {
+                                                if (d.DayOfWeek == DayOfWeek.Friday || d.DayOfWeek == DayOfWeek.Saturday)
+                                                    weekendDays++;
+                                            }
+                                            holidayDays = totalDays - workingDays - weekendDays;
+                                            var rate = workingDays > 0 ? (decimal)presentInt / workingDays * 100 : 0;
+                                            var hours = user.Duration / 60;
+                                            var minutes = user.Duration % 60;
+
+                                            <tr style="background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+                                                <td style="color: #212529; padding: 8px; text-align: left; vertical-align: middle;">
+                                                    <div>
+                                                        <strong style="color: #212529; font-size: 0.9rem; font-weight: bold;">@user.UserName</strong>
+                                                        <br />
+                                                        <small style="color: #6c757d; font-size: 0.75rem;">@user.Department</small>
+                                                    </div>
+                                                </td>
+                                                <td style="color: #212529; padding: 8px; text-align: center; vertical-align: middle;">@totalDays</td>
+                                                <td style="color: #212529; padding: 8px; text-align: center; vertical-align: middle;"><strong style="font-weight: bold;">@workingDays</strong></td>
+                                                <td style="background: #d1e7dd; color: #0f5132; padding: 8px; text-align: center; vertical-align: middle;"><strong style="font-weight: bold;">@presentInt</strong></td>
+                                                <td style="background: #f8d7da; color: #842029; padding: 8px; text-align: center; vertical-align: middle;"><strong style="font-weight: bold;">@absentInt</strong></td>
+                                                <td style="color: #212529; padding: 8px; text-align: center; vertical-align: middle;">@weekendDays</td>
+                                                <td style="color: #212529; padding: 8px; text-align: center; vertical-align: middle;">@holidayDays</td>
+                                                <td style="color: #212529; padding: 8px; text-align: center; vertical-align: middle;">@hours h @minutes m</td>
+                                                <td style="padding: 8px; text-align: center; vertical-align: middle;">
+                                                    <span style="background: @(rate >= 90 ? "#198754" : rate >= 75 ? "#ffc107" : "#dc3545"); color: #ffffff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; display: inline-block;">
+                                                        @rate.ToString("F1")%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+
                 <!-- User Attendance Table -->
                 @if (branch.Users.Any())
                 {
@@ -215,6 +288,7 @@
                                     else
                                     {
                                         <th>Days Present</th>
+                                        <th>Days Absent</th>
                                         <th>Total Duration</th>
                                     }
                                 </tr>
@@ -271,6 +345,7 @@
                                         else
                                         {
                                             <td>@user.FirstCheckIn</td>
+                                            <td>@user.LastCheckOut</td>
                                             <td>@user.DurationDisplay</td>
                                         }
                                     </tr>
@@ -338,6 +413,41 @@
 </div>
 
 @section Scripts {
+    <style>
+        /* Force color overrides for employee summary table */
+        .employee-summary-table th,
+        .employee-summary-table td {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .employee-summary-table thead th {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .employee-summary-table tbody tr {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .employee-summary-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .employee-summary-table .badge {
+            color: white !important;
+        }
+
+        /* Ensure employee names and departments are visible */
+        .employee-summary-table td div,
+        .employee-summary-table td strong,
+        .employee-summary-table td small {
+            color: white !important;
+        }
+
+        .employee-summary-table td div small {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+    </style>
     <script>
         document.getElementById('todayBtn')?.addEventListener('click', function() {
             window.location.href = '@Url.Action("BranchAttendance")';

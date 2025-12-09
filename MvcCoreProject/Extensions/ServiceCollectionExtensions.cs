@@ -21,7 +21,7 @@ namespace MvcCoreProject.Extensions
         public static IServiceCollection AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(configuration.GetConnectionString("RemoteConnection")));
 
             return services;
         }
@@ -229,16 +229,25 @@ namespace MvcCoreProject.Extensions
         /// </summary>
         public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", policy =>
-                {
-                    policy.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader();
-                });
-            });
-
+            // services.AddCors(options =>
+            // {
+            //     options.AddPolicy("AllowAll", policy =>
+            //     {
+            //         policy.AllowAnyOrigin()
+            //               .AllowAnyMethod()
+            //               .AllowAnyHeader();
+            //     });
+            // });
+             services.AddCors(options =>
+             {
+                 options.AddPolicy("AllowAll", policy =>
+                 {
+                     policy.SetIsOriginAllowed(_ => true)  // Allow any origin
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials();  // Required for SignalR!
+                 });
+             });
             return services;
         }
     }

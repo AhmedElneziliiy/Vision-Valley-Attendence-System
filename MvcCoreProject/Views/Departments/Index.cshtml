@@ -171,7 +171,7 @@
                                         onclick="editDepartment(@dept.Id)">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                @if (User.IsInRole("Admin"))
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
                                 {
                                     <button class="btn-icon btn-delete"
                                             title="Delete Department"

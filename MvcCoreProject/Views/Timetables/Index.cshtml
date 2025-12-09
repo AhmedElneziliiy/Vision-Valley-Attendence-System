@@ -15,7 +15,7 @@
                 <p class="text-muted mb-0">Manage working hours and schedules</p>
             </div>
         </div>
-        @if (User.IsInRole("Admin"))
+        @if (User.IsInRole("Admin") || User.IsInRole("HR"))
         {
             <div class="users-actions">
                 <a asp-action="Create" class="btn-primary">
@@ -204,7 +204,7 @@
                                         onclick="viewTimetable(@timetable.Id)">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                @if (User.IsInRole("Admin"))
+                                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
                                 {
                                     <button class="btn-icon btn-edit"
                                             title="Edit Timetable"
@@ -230,7 +230,7 @@
             <i class="bi bi-clock-history"></i>
             <h3>No Timetables Found</h3>
             <p>Get started by creating your first timetable.</p>
-            @if (User.IsInRole("Admin"))
+            @if (User.IsInRole("Admin") || User.IsInRole("HR"))
             {
                 <a asp-action="Create" class="btn-primary mt-3">
                     <i class="bi bi-plus-circle"></i>
